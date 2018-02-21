@@ -144,6 +144,7 @@ namespace SFQuadTree
         }
 
         #region Non-Thread-Safe Queeries
+
         public Transformable[] GetKClosestObjects(Vector2f pos, int k, float range = float.MaxValue)
         {
             CachedSortList.Clear();
@@ -167,18 +168,32 @@ namespace SFQuadTree
 
             return CachedList.ToArray();
         }
+
         #endregion
 
         #region Thread-Safe Queeries
+
         public Transformable GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
             return NearestNeighborSearch(pos, maxDistance * maxDistance);
+        }
+
+        public void GetKClosestObjects(Vector2f pos, int k, float range, QuadTreeResultList results)
+        {
+            float r = range * range;
+            KNearestNeighborSearch(ref pos, k, ref r, results);
+        }
+
+        public void GetObjectsInRange(Vector2f pos, float range, QuadTreeResultList results)
+        {
+            AllNearestNeighborsSearch(pos, range * range, results);
         }
 
         public void GetObjectsInRect(FloatRect rect, List<Transformable> results)
         {
             ObjectsInRectSearch(rect, results);
         }
+
         #endregion
 
         #region Internal Queeries
