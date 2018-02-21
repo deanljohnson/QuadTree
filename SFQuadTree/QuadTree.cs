@@ -211,7 +211,7 @@ namespace SFQuadTree
 
             CachedSortList.Clear();
             float r = range * range;
-            KNearestNeighborSearch(ref pos, k, ref r/*, CachedSortList*/);
+            KNearestNeighborSearch(ref pos, k, ref r, CachedSortList);
             return CachedSortList.GetObjects();
             /*var ret = new Transformable[Math.Min(k, CachedSortList.Count)];
             for (var i = 0; i < ret.Length; i++)
@@ -301,7 +301,7 @@ namespace SFQuadTree
             return closest;
         }
 
-        private void KNearestNeighborSearch(ref Vector2f pos, int k, ref float rangeSquared/*, SortedList<float, Transformable> results*/)
+        private void KNearestNeighborSearch(ref Vector2f pos, int k, ref float rangeSquared, QuadTreeResultList results)
         {
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)
@@ -319,27 +319,27 @@ namespace SFQuadTree
                         continue;
 
                     //If results list has empty elements
-                    if (CachedSortList.Count < k)
+                    if (results.Count < k)
                     {
-                        /*while (CachedSortList.ContainsKey(ds))
+						/*while (CachedSortList.ContainsKey(ds))
                         {
                             //Break any ties
                             ds += 1f;
                         }*/
-                        CachedSortList.Add(ds, obj);
+	                    results.Add(ds, obj);
                         continue;
                     }
 
-                    if (ds < CachedSortList.GetDistance(CachedSortList.Count - 1))
+                    if (ds < results.GetDistance(results.Count - 1))
                     {
-                        /*while (CachedSortList.ContainsKey(ds))
+						/*while (CachedSortList.ContainsKey(ds))
                         {
                             //Break any ties
                             ds += 1f;
                         }*/
-                        CachedSortList.RemoveAt(CachedSortList.Count - 1);
-                        CachedSortList.Add(ds, obj);
-                        rangeSquared = CachedSortList.GetDistance(CachedSortList.Count - 1);
+	                    results.RemoveAt(results.Count - 1);
+	                    results.Add(ds, obj);
+                        rangeSquared = results.GetDistance(CachedSortList.Count - 1);
                     }
                 }
                 return;
@@ -360,7 +360,7 @@ namespace SFQuadTree
                 if (distToChildBorder > rangeSquared)
                     continue;
 
-                m_ChildNodes[i].KNearestNeighborSearch(ref pos, k, ref rangeSquared);
+                m_ChildNodes[i].KNearestNeighborSearch(ref pos, k, ref rangeSquared, results);
             }
         }
 
