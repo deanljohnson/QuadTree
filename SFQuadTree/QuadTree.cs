@@ -26,8 +26,6 @@ namespace SFQuadTree
         private byte m_ActiveNodes; //Used a a bitmask to track active nodes
         private const int MIN_SIZE = 5;
         private const int NUM_OBJECTS = 1;
-        /*private int m_MaxLifespan = 2; //How long to wait before deleting an empty node
-        private int m_CurrentLife;*/
 
         public static int CheckCount = 0;
         public static int ExtraOpCount = 0;
@@ -69,25 +67,6 @@ namespace SFQuadTree
 
         public void Update()
         {
-            /*if (!m_TreeBuilt)
-                return;*/
-
-            //If empty node, start death ticking
-            /*if (m_Objects.Count == 0 && m_ActiveNodes == 0)
-            {
-                if (m_CurrentLife == -1)
-                    m_CurrentLife = m_MaxLifespan;
-                else if (m_CurrentLife > 0)
-                    m_CurrentLife--;
-            }
-            else if (m_CurrentLife != -1)
-            {
-                if (m_MaxLifespan <= 8)
-                    m_MaxLifespan *= 2;
-
-                m_CurrentLife = -1;
-            }*/
-            
             //Remove null references
             for (var i = 0; i < m_Objects.Count; i++)
             {
@@ -137,21 +116,6 @@ namespace SFQuadTree
                 CachedHashSet.Add(obj);
             }
 
-            /*for (var i = 0; i < m_Objects.Count; i++)
-            {
-                var obj = m_Objects[i];
-                var current = this;
-
-                while (!current.m_Region.Contains(obj.Position.X, obj.Position.Y))
-                {
-                    if (current.m_Parent != null) current = current.m_Parent;
-                    else break;
-                }
-
-                m_Objects.RemoveAt(i--);
-                current.Insert(obj);
-            }*/
-
             //prune out any dead branches in the tree
             for (int flags = m_ActiveNodes, index = 0; flags > 0; flags >>= 1, index++)
             {
@@ -161,25 +125,7 @@ namespace SFQuadTree
                     m_ChildNodes[index] = null;
                     m_ActiveNodes ^= (byte)(1 << index);       //remove the node from the active nodes flag list
                 }
-
-                /*if ((flags & 1) == 1 && m_ChildNodes[index].m_CurrentLife == 0 && m_ChildNodes[index].m_Objects.Count == 0)
-                {
-                    m_ChildNodes[index] = null;
-                    m_ActiveNodes ^= (byte)(1 << index);       //remove the node from the active nodes flag list
-                }*/
             }
-
-
-            //Prune dead branches
-            /*for (var index = 0; index < 4; index++)
-            {
-                if ((m_ActiveNodes & (1 << index)) != 0 && m_ChildNodes[index].m_CurrentLife == 0)
-                {
-                    if (m_ChildNodes[index].m_Objects.Count != 0) continue;
-                    m_ChildNodes[index] = null;
-                    m_ActiveNodes &= (byte)(~(1 << index));
-                }
-            }*/
         }
 
         public void Add(Transformable t)
@@ -213,12 +159,6 @@ namespace SFQuadTree
             float r = range * range;
             KNearestNeighborSearch(ref pos, k, ref r, CachedSortList);
             return CachedSortList.GetObjects();
-            /*var ret = new Transformable[Math.Min(k, CachedSortList.Count)];
-            for (var i = 0; i < ret.Length; i++)
-            {
-                ret[i] = CachedSortList.Values[i];
-            }
-            return ret;*/
         }
 
         public Transformable[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
@@ -229,12 +169,6 @@ namespace SFQuadTree
             AllNearestNeighborsSearch(pos, range * range, CachedSortList);
 
             return CachedSortList.GetObjects();
-            /*var ret = new Transformable[CachedSortList.Count];
-            for (var i = 0; i < ret.Length; i++)
-            {
-                ret[i] = CachedSortList.Values[i];
-            }
-            return ret;*/
         }
 
         public Transformable[] GetObjectsInRect(FloatRect rect)
@@ -321,24 +255,14 @@ namespace SFQuadTree
                     //If results list has empty elements
                     if (results.Count < k)
                     {
-						/*while (CachedSortList.ContainsKey(ds))
-                        {
-                            //Break any ties
-                            ds += 1f;
-                        }*/
-	                    results.Add(ds, obj);
+                        results.Add(ds, obj);
                         continue;
                     }
 
                     if (ds < results.GetDistance(results.Count - 1))
                     {
-						/*while (CachedSortList.ContainsKey(ds))
-                        {
-                            //Break any ties
-                            ds += 1f;
-                        }*/
-	                    results.RemoveAt(results.Count - 1);
-	                    results.Add(ds, obj);
+                        results.RemoveAt(results.Count - 1);
+                        results.Add(ds, obj);
                         rangeSquared = results.GetDistance(CachedSortList.Count - 1);
                     }
                 }
