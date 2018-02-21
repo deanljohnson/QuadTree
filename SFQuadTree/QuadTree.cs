@@ -139,15 +139,11 @@ namespace SFQuadTree
         {
             if (t == null)
                 return;
+
             m_PendingRemoval.Enqueue(t);
         }
 
-        #region Queeries
-        public Transformable GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
-        {
-            return NearestNeighborSearch(pos, maxDistance * maxDistance);
-        }
-
+        #region Non-Thread-Safe Queeries
         public Transformable[] GetKClosestObjects(Vector2f pos, int k, float range = float.MaxValue)
         {
             CachedSortList.Clear();
@@ -170,6 +166,13 @@ namespace SFQuadTree
             ObjectsInRectSearch(rect, CachedList);
 
             return CachedList.ToArray();
+        }
+        #endregion
+
+        #region Thread-Safe Queeries
+        public Transformable GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
+        {
+            return NearestNeighborSearch(pos, maxDistance * maxDistance);
         }
 
         public void GetObjectsInRect(FloatRect rect, List<Transformable> results)
