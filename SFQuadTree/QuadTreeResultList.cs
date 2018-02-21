@@ -3,7 +3,7 @@ using SFML.Graphics;
 
 namespace SFQuadTree
 {
-    class QuadTreeResultList
+    public class QuadTreeResultList
     {
         private struct Record
         {
