@@ -126,6 +126,8 @@ namespace SFQuadTree
                     m_ActiveNodes ^= (byte)(1 << index);       //remove the node from the active nodes flag list
                 }
             }
+
+            UpdateTree();
         }
 
         public void Add(Transformable t)
@@ -146,14 +148,14 @@ namespace SFQuadTree
         #region Queeries
         public Transformable GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
-            UpdateTree();
+            //UpdateTree();
 
             return NearestNeighborSearch(pos, maxDistance * maxDistance);
         }
 
         public Transformable[] GetKClosestObjects(Vector2f pos, int k, float range = float.MaxValue)
         {
-            UpdateTree();
+            //UpdateTree();
 
             CachedSortList.Clear();
             float r = range * range;
@@ -163,7 +165,7 @@ namespace SFQuadTree
 
         public Transformable[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
-            UpdateTree();
+            //UpdateTree();
 
             CachedSortList.Clear();
             AllNearestNeighborsSearch(pos, range * range, CachedSortList);
@@ -173,7 +175,7 @@ namespace SFQuadTree
 
         public Transformable[] GetObjectsInRect(FloatRect rect)
         {
-            UpdateTree();
+            //UpdateTree();
 
             CachedList.Clear();
             ObjectsInRectSearch(rect, CachedList);
@@ -183,7 +185,7 @@ namespace SFQuadTree
 
         public void GetObjectsInRect(FloatRect rect, List<Transformable> results)
         {
-            UpdateTree();
+            //UpdateTree();
 
             ObjectsInRectSearch(rect, results);
         }
@@ -358,15 +360,22 @@ namespace SFQuadTree
         #region Internal Operations
         private void UpdateTree()
         {
-            while (m_PendingInsertion.Count != 0)
+            if (m_PendingInsertion != null)
             {
-                Insert(m_PendingInsertion.Dequeue());
+                while (m_PendingInsertion.Count != 0)
+                {
+                    Insert(m_PendingInsertion.Dequeue());
+                }
             }
 
-            while (m_PendingRemoval.Count != 0)
+            if (m_PendingRemoval != null)
             {
-                Delete(m_PendingRemoval.Dequeue());
+                while (m_PendingRemoval.Count != 0)
+                {
+                    Delete(m_PendingRemoval.Dequeue());
+                }
             }
+            
 
             for (var i = 0; i < m_Objects.Count; i++)
             {
