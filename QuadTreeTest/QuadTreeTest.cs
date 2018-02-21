@@ -146,15 +146,15 @@ namespace QuadTreeTest
                 testObject.Key.FillColor = Color.Blue;
                 WrapPosition(testObject.Key);
             }
-            QuadTree.CheckCount = 0;
-            QuadTree.ExtraOpCount = 0;
+            //QuadTree.CheckCount = 0;
+            //QuadTree.ExtraOpCount = 0;
             m_Tree.Update();
             Clock.BenchmarkTime(() => 
             {
                 var closest = m_Tree.GetKClosestObjects(m_MainTestObject.Position, 30, 300f);
             }, 10000);
-            Console.WriteLine("End Quad Tree test, checked: " + QuadTree.CheckCount);
-            Console.WriteLine("ExtraOp Count: " + QuadTree.ExtraOpCount);
+            //Console.WriteLine("End Quad Tree test, checked: " + QuadTree.CheckCount);
+            //Console.WriteLine("ExtraOp Count: " + QuadTree.ExtraOpCount);
             Console.WriteLine("Watch Time: " + Extensions.Watch.ElapsedMilliseconds);
             Extensions.Watch.Reset();
             var simpleCount = 0;

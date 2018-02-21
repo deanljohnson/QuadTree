@@ -27,9 +27,6 @@ namespace SFQuadTree
         private const int MIN_SIZE = 5;
         private const int NUM_OBJECTS = 1;
 
-        public static int CheckCount = 0;
-        public static int ExtraOpCount = 0;
-
         public static Action<Transformable> OnCheckAgainstObject;
     
         public int Count
@@ -148,15 +145,11 @@ namespace SFQuadTree
         #region Queeries
         public Transformable GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
-            //UpdateTree();
-
             return NearestNeighborSearch(pos, maxDistance * maxDistance);
         }
 
         public Transformable[] GetKClosestObjects(Vector2f pos, int k, float range = float.MaxValue)
         {
-            //UpdateTree();
-
             CachedSortList.Clear();
             float r = range * range;
             KNearestNeighborSearch(ref pos, k, ref r, CachedSortList);
@@ -165,8 +158,6 @@ namespace SFQuadTree
 
         public Transformable[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
-            //UpdateTree();
-
             CachedSortList.Clear();
             AllNearestNeighborsSearch(pos, range * range, CachedSortList);
 
@@ -175,8 +166,6 @@ namespace SFQuadTree
 
         public Transformable[] GetObjectsInRect(FloatRect rect)
         {
-            //UpdateTree();
-
             CachedList.Clear();
             ObjectsInRectSearch(rect, CachedList);
 
@@ -185,8 +174,6 @@ namespace SFQuadTree
 
         public void GetObjectsInRect(FloatRect rect, List<Transformable> results)
         {
-            //UpdateTree();
-
             ObjectsInRectSearch(rect, results);
         }
         #endregion
@@ -248,7 +235,7 @@ namespace SFQuadTree
                     var obj = m_Objects[i];
                     if (obj == null)
                         continue;
-                    CheckCount++;
+
                     var ds = (pos - obj.Position).SquaredLength();
 
                     if (ds > rangeSquared)
