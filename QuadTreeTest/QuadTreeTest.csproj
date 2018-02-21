@@ -76,7 +76,7 @@
     <Compile Include="QuadTreeTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\QuadTree\SFQuadTree.csproj">
+    <ProjectReference Include="..\SFQuadTree\SFQuadTree.csproj">
       <Project>{E7B063F4-0385-4643-ADCC-FB6471803644}</Project>
       <Name>SFQuadTree</Name>
     </ProjectReference>
