@@ -145,6 +145,10 @@ namespace SFQuadTree
 
         #region Non-Thread-Safe Queeries
 
+        /// <summary>
+        /// Gets the K closest objects to a given position.
+        /// This version of the queery is not thread safe.
+        /// </summary>
         public Transformable[] GetKClosestObjects(Vector2f pos, int k, float range = float.MaxValue)
         {
             CachedSortList.Clear();
@@ -153,6 +157,10 @@ namespace SFQuadTree
             return CachedSortList.GetObjects();
         }
 
+        /// <summary>
+        /// Gets all objects within the given range of the given position.
+        /// This version of the queery is not thread safe.
+        /// </summary>
         public Transformable[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
             CachedSortList.Clear();
@@ -161,6 +169,10 @@ namespace SFQuadTree
             return CachedSortList.GetObjects();
         }
 
+        /// <summary>
+        /// Gets all objects within the given FloatRect.
+        /// This version of the queery is not thread safe.
+        /// </summary>
         public Transformable[] GetObjectsInRect(FloatRect rect)
         {
             CachedList.Clear();
@@ -173,22 +185,42 @@ namespace SFQuadTree
 
         #region Thread-Safe Queeries
 
+        /// <summary>
+        /// Gets the closest object to the given position.
+        /// This version of the queery is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
         public Transformable GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
             return NearestNeighborSearch(pos, maxDistance * maxDistance);
         }
 
+        /// <summary>
+        /// Gets the K closest objects to a given position.
+        /// This version of the queery is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
         public void GetKClosestObjects(Vector2f pos, int k, float range, QuadTreeResultList results)
         {
             float r = range * range;
             KNearestNeighborSearch(ref pos, k, ref r, results);
         }
 
+        /// <summary>
+        /// Gets all objects within the given range of the given position.
+        /// This version of the queery is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
         public void GetObjectsInRange(Vector2f pos, float range, QuadTreeResultList results)
         {
             AllNearestNeighborsSearch(pos, range * range, results);
         }
 
+        /// <summary>
+        /// Gets all objects within the given FloatRect.
+        /// This version of the queery is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
         public void GetObjectsInRect(FloatRect rect, List<Transformable> results)
         {
             ObjectsInRectSearch(rect, results);
