@@ -39,34 +39,21 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="libs\csfml-audio-2.dll" />
-    <Content Include="libs\csfml-graphics-2.dll" />
-    <Content Include="libs\csfml-network-2.dll" />
-    <Content Include="libs\csfml-system-2.dll" />
-    <Content Include="libs\csfml-window-2.dll" />
-    <Content Include="libs\libsndfile-1.dll" />
-    <Content Include="libs\openal32.dll" />
-    <Content Include="libs\sfmlnet-audio-2.dll" />
-    <Content Include="libs\sfmlnet-graphics-2.dll" />
-    <Content Include="libs\sfmlnet-system-2.dll" />
-    <Content Include="libs\sfmlnet-window-2.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="sfmlnet-audio-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>libs\sfmlnet-audio-2.dll</HintPath>
+      <HintPath>..\libs\sfmlnet-audio-2.dll</HintPath>
     </Reference>
     <Reference Include="sfmlnet-graphics-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>libs\sfmlnet-graphics-2.dll</HintPath>
+      <HintPath>..\libs\sfmlnet-graphics-2.dll</HintPath>
     </Reference>
     <Reference Include="sfmlnet-system-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>libs\sfmlnet-system-2.dll</HintPath>
+      <HintPath>..\libs\sfmlnet-system-2.dll</HintPath>
     </Reference>
     <Reference Include="sfmlnet-window-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>libs\sfmlnet-window-2.dll</HintPath>
+      <HintPath>..\libs\sfmlnet-window-2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
@@ -83,7 +70,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)\libs\*.*" "$(TargetDir)"</PostBuildEvent>
+    <PostBuildEvent>copy "$(ProjectDir)\..\libs\*.*" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
