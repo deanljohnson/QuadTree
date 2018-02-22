@@ -111,7 +111,6 @@ namespace QuadTreeTest
             if (kClosest.Length > 1)
                 ((CircleShape) kClosest[0]).FillColor = Color.Red;
 
-
             while (m_NumCircles > m_TestObjects.Count)
             {
                 var obj = new CircleShape(2f)
@@ -128,6 +127,14 @@ namespace QuadTreeTest
                 m_TestObjects.Remove(obj);
                 m_Tree.Remove(obj);
             }
+
+            for (int i = 0; i < 10; i++)
+            {
+                var removedObj = m_TestObjects.Keys.ToArray()[Random.Next(0, m_TestObjects.Count)];
+                m_TestObjects.Remove(removedObj);
+                m_Tree.Remove(removedObj);
+            }
+
             /*var allClosest = m_Tree.GetObjectsInRange(m_MainTestObject.Position, m_QueeryRange);
             foreach (var circle in allClosest.Cast<CircleShape>())
             {
