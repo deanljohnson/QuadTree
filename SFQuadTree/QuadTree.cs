@@ -26,8 +26,6 @@ namespace SFQuadTree
         private byte m_ActiveNodes; //Used a a bitmask to track active nodes
         private const int MIN_SIZE = 5;
         private const int NUM_OBJECTS = 1;
-
-        public static Action<Transformable> OnCheckAgainstObject;
     
         public int Count
         {

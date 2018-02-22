@@ -55,7 +55,6 @@ namespace QuadTreeTest
             m_PuppetTestObject = m_TestObjects.Last().Key;
 
             m_Tree = new QuadTree(m_Bounds, m_TestObjects.Select(kvp => kvp.Key).Cast<Transformable>().ToList());
-            QuadTree.OnCheckAgainstObject = OnVisit;
 
             Game.Window.KeyPressed += (sender, args) =>
             {
