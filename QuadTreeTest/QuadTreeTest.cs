@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -11,7 +12,8 @@ namespace QuadTreeTest
     internal enum TestType
     {
         Graphical,
-        Console
+        Console,
+        ConsoleThreaded
     }
 
     public class QuadTreeTest : Drawable
@@ -32,7 +34,7 @@ namespace QuadTreeTest
 
         private float m_QueeryRange = 300f;
 
-        private TestType TestType = TestType.Graphical;
+        private TestType TestType = TestType.ConsoleThreaded;
 
         public QuadTreeTest()
         {
@@ -69,10 +71,20 @@ namespace QuadTreeTest
 
         public void Update(float dt)
         {
-            if (TestType == TestType.Graphical)
-                GraphicalTestUpdate(dt);
-            else
-                ConsoleTestUpdate(dt);
+            switch (TestType)
+            {
+                case TestType.Graphical:
+                    GraphicalTestUpdate(dt);
+                    break;
+                case TestType.Console:
+                    ConsoleTestUpdate(dt);
+                    break;
+                case TestType.ConsoleThreaded:
+                    ConsoleThreadedTest(dt);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         private void GraphicalTestUpdate(float dt)
@@ -95,10 +107,6 @@ namespace QuadTreeTest
                 WrapPosition(testObject.Key);
             }
 
-            //m_MainTestObject.Position = m_Bounds.Center();
-            //m_PuppetTestObject.Position = new Vector2f(Mouse.GetPosition(Game.Window).X, Mouse.GetPosition(Game.Window).Y);
-
-            //var kClosest = m_Tree.GetObjectsInRect(new FloatRect(mousePos.X - 75f, mousePos.Y - 75f, 150f, 150f));
             var kClosest = m_Tree.GetKClosestObjects(GetMousePos(), 30, m_QueeryRange);
             foreach (var circle in kClosest.Cast<CircleShape>())
             {
@@ -130,15 +138,6 @@ namespace QuadTreeTest
                 m_TestObjects.Remove(removedObj);
                 m_Tree.Remove(removedObj);
             }
-
-            /*var allClosest = m_Tree.GetObjectsInRange(m_MainTestObject.Position, m_QueeryRange);
-            foreach (var circle in allClosest.Cast<CircleShape>())
-            {
-                circle.FillColor = Color.Green;
-            }*/
-
-            //var closest = m_Tree.GetClosestObject(m_MainTestObject.Position);
-            //((CircleShape)closest).FillColor = Color.Cyan;
         }
 
         private void ConsoleTestUpdate(float dt)
@@ -206,8 +205,67 @@ namespace QuadTreeTest
                 }
             }, 10000);
 
-            
             Console.WriteLine("End Simple Test, checked: " + simpleCount);
+        }
+
+        /// <summary>
+        /// The purpose of this test is to determine whether or 
+        /// not multi-threaded execution has race-donditions and deadlocks
+        /// by executing MANY thread operations at once
+        /// </summary>
+        /// <param name="dt"></param>
+        public void ConsoleThreadedTest(float dt)
+        {
+            // Move all objects according to their velocities
+            foreach (var testObject in m_TestObjects)
+            {
+                testObject.Key.Position += testObject.Value * dt * m_SpeedMultiplier;
+                testObject.Key.FillColor = Color.Blue;
+                WrapPosition(testObject.Key);
+            }
+
+            m_Tree.Update();
+
+            // Create threads for various queeries
+            List<Thread> threads = new List<Thread>();
+            for (int i = 0; i < 5; i++)
+            {
+                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
+
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+            }
+
+            for (int i = 0; i < threads.Count; i++)
+            {
+                threads[i].Start();
+            }
+
+            for (int i = 0; i < threads.Count; i++)
+            {
+                threads[i].Join();
+            }
+
+            Console.WriteLine($"Executed parallel update with dt {dt}");
         }
 
         public void Draw(RenderTarget target, RenderStates states)
