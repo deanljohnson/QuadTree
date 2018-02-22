@@ -7,8 +7,6 @@ namespace SFQuadTree
 {
     public static class Extensions
     {
-        public static Stopwatch Watch = new Stopwatch();
-
         public static Vector2f Normalized(this Vector2f v)
         {
             return v / v.Length();
@@ -31,9 +29,6 @@ namespace SFQuadTree
 
         public static float SquaredDistance(this FloatRect f, Vector2f v)
         {
-            if (!Watch.IsRunning)
-                Watch.Start();
-
             //var min = f.Min();
             var max = f.Max();
 
@@ -54,8 +49,6 @@ namespace SFQuadTree
 
             dx -= v.X;
             dy -= v.Y;*/
-
-            Watch.Stop();
             
             return (dx * dx) + (dy * dy);
             /*var dx = v.X - Math.Max(Math.Min(v.X, f.Left + f.Width), f.Left);

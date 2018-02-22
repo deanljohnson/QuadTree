@@ -157,8 +157,6 @@ namespace QuadTreeTest
             }, 10000);
             //Console.WriteLine("End Quad Tree test, checked: " + QuadTree.CheckCount);
             //Console.WriteLine("ExtraOp Count: " + QuadTree.ExtraOpCount);
-            Console.WriteLine("Watch Time: " + Extensions.Watch.ElapsedMilliseconds);
-            Extensions.Watch.Reset();
             var simpleCount = 0;
             Clock.BenchmarkTime(() =>
             {
