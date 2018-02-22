@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using PriorityQueue;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -34,7 +35,7 @@ namespace QuadTreeTest
 
         private float m_QueeryRange = 300f;
 
-        private TestType TestType = TestType.ConsoleThreaded;
+        private TestType TestType = TestType.Console;
 
         public QuadTreeTest()
         {
@@ -135,8 +136,8 @@ namespace QuadTreeTest
             for (int i = 0; i < 10; i++)
             {
                 var removedObj = m_TestObjects.Keys.ToArray()[Random.Next(0, m_TestObjects.Count)];
-                m_TestObjects.Remove(removedObj);
-                m_Tree.Remove(removedObj);
+                //m_TestObjects.Remove(removedObj);
+                //m_Tree.Remove(removedObj);
             }
         }
 
@@ -151,56 +152,20 @@ namespace QuadTreeTest
             //QuadTree.CheckCount = 0;
             //QuadTree.ExtraOpCount = 0;
             m_Tree.Update();
-            Clock.BenchmarkTime(() => 
+            /*Clock.BenchmarkTime(() => 
             {
                 var closest = m_Tree.GetKClosestObjects(m_MainTestObject.Position, 30, 300f);
-            }, 10000);
+            }, 10000);*/
             //Console.WriteLine("End Quad Tree test, checked: " + QuadTree.CheckCount);
             //Console.WriteLine("ExtraOp Count: " + QuadTree.ExtraOpCount);
             var simpleCount = 0;
             Clock.BenchmarkTime(() =>
             {
-                var k = 30;
-                var results = new SortedList<float, CircleShape>();
-                var rangeSquared = 300f * 300f;
-                foreach (var testObject in m_TestObjects)
-                {
-                    if (testObject.Key == null)
-                        continue;
-                    simpleCount++;
-                    var ds = (m_MainTestObject.Position - testObject.Key.Position).SquaredLength();
-                    if (ds > rangeSquared)
-                        continue;
-                    //If results list has empty elements
-                    if (results.Count < k)
-                    {
-                        while (results.ContainsKey(ds))
-                        {
-                            //Break any ties
-                            ds += .01f;
-                        }
-                        results.Add(ds, testObject.Key);
-                        continue;
-                    }
-
-                    if (ds < results.Keys[results.Count - 1])
-                    {
-                        while (results.ContainsKey(ds))
-                        {
-                            //Break any ties
-                            ds += .01f;
-                        }
-                        results.RemoveAt(results.Count - 1);
-                        results.Add(ds, testObject.Key);
-                        rangeSquared = ds;
-                    }
-                }
-
-                var shapes = new CircleShape[Math.Min(30, results.Count)];
-                for (var i = 0; i < shapes.Length; i++)
-                {
-                    shapes[i] = results.Values[i];
-                }
+                m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
+                m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
+                m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
+                m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
+                m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
             }, 10000);
 
             Console.WriteLine("End Simple Test, checked: " + simpleCount);
@@ -234,11 +199,11 @@ namespace QuadTreeTest
                 threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
                 threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
 
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
 
                 threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
                 threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));

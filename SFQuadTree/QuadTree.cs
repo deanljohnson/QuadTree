@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using PriorityQueue;
 using SFML.Graphics;
 using SFML.System;
 
@@ -11,7 +12,7 @@ namespace SFQuadTree
     {
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
         // Note that these are not used in function chains claiming to be thread safe
-        private static readonly QuadTreeResultList CachedSortList = new QuadTreeResultList();
+        private static readonly PriorityQueue<Transformable> CachedSortList = new PriorityQueue<Transformable>(true);
         private static readonly HashSet<Transformable> CachedHashSet = new HashSet<Transformable>();
         private static readonly List<Transformable> CachedList = new List<Transformable>();
 
@@ -160,7 +161,7 @@ namespace SFQuadTree
             CachedSortList.Clear();
             float r = range * range;
             KNearestNeighborSearch(ref pos, k, ref r, CachedSortList);
-            return CachedSortList.GetObjects();
+            return CachedSortList.ToArray();
         }
 
         /// <summary>
@@ -206,7 +207,7 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetKClosestObjects(Vector2f pos, int k, float range, QuadTreeResultList results)
+        public void GetKClosestObjects(Vector2f pos, int k, float range, PriorityQueue<Transformable> results)
         {
             float r = range * range;
             KNearestNeighborSearch(ref pos, k, ref r, results);
@@ -280,14 +281,13 @@ namespace SFQuadTree
             return closest;
         }
 
-        private void KNearestNeighborSearch(ref Vector2f pos, int k, ref float rangeSquared, QuadTreeResultList results)
+        private void KNearestNeighborSearch(ref Vector2f pos, int k, ref float rangeSquared, PriorityQueue<Transformable> results)
         {
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)
             {
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
-                    //OnCheckAgainstObject?.Invoke(m_Objects[i]);
                     var obj = m_Objects[i];
                     if (obj == null)
                         continue;
@@ -300,15 +300,15 @@ namespace SFQuadTree
                     //If results list has empty elements
                     if (results.Count < k)
                     {
-                        results.Add(ds, obj);
+                        results.Enqueue(obj, ds);
                         continue;
                     }
 
-                    if (ds < results.GetDistance(results.Count - 1))
+                    if (ds < results.GetPriority(results.Peek()))
                     {
-                        results.RemoveAt(results.Count - 1);
-                        results.Add(ds, obj);
-                        rangeSquared = results.GetDistance(results.Count - 1);
+                        results.Dequeue();
+                        results.Enqueue(obj, ds);
+                        rangeSquared = (float) results.GetPriority(results.Peek());
                     }
                 }
                 return;

@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PriorityQueue">
+      <HintPath>..\libs\PriorityQueue.dll</HintPath>
+    </Reference>
     <Reference Include="sfmlnet-graphics-2, Version=2.2.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\sfmlnet-graphics-2.dll</HintPath>
