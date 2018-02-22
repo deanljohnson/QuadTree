@@ -23,7 +23,6 @@ namespace QuadTreeTest
         private float m_TestRefreshRate = 2f;
         private float m_TestRefreshCounter;
         private readonly CircleShape m_MainTestObject;
-        private readonly CircleShape m_PuppetTestObject;
 
         private FloatRect m_Bounds;
         private float m_SpeedMultiplier = 200f;
@@ -51,8 +50,6 @@ namespace QuadTreeTest
 
             m_MainTestObject = m_TestObjects.First().Key;
             m_MainTestObject.Position = m_Bounds.Center();
-
-            m_PuppetTestObject = m_TestObjects.Last().Key;
 
             m_Tree = new QuadTree(m_Bounds, m_TestObjects.Select(kvp => kvp.Key).Cast<Transformable>().ToList());
 
