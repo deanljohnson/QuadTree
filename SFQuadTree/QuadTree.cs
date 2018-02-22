@@ -9,7 +9,8 @@ namespace SFQuadTree
 {
     public class QuadTree
     {
-        //To avoid memory allocation, we define statics collection to be re-used for scratch work
+        // To avoid memory allocation, we define statics collection to be re-used for scratch work
+        // Note that these are not used in function chains claiming to be thread safe
         private static readonly QuadTreeResultList CachedSortList = new QuadTreeResultList();
         private static readonly HashSet<Transformable> CachedHashSet = new HashSet<Transformable>();
         private static readonly List<Transformable> CachedList = new List<Transformable>();
@@ -40,7 +41,6 @@ namespace SFQuadTree
             m_Region = region;
             m_Objects = objects;
             m_Parent = parent;
-            //m_CurrentLife = -1;
 
             //If we are a child, we wont need these allocations
             if (parent == null)
@@ -308,7 +308,7 @@ namespace SFQuadTree
                     {
                         results.RemoveAt(results.Count - 1);
                         results.Add(ds, obj);
-                        rangeSquared = results.GetDistance(CachedSortList.Count - 1);
+                        rangeSquared = results.GetDistance(results.Count - 1);
                     }
                 }
                 return;
