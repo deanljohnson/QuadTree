@@ -240,11 +240,11 @@ namespace QuadTreeTest
                 threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
                 threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
 
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new QuadTreeResultList()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
 
                 threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
                 threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));

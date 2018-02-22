@@ -169,10 +169,10 @@ namespace SFQuadTree
         /// </summary>
         public Transformable[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
-            CachedSortList.Clear();
-            AllNearestNeighborsSearch(pos, range * range, CachedSortList);
+            CachedList.Clear();
+            AllNearestNeighborsSearch(pos, range * range, CachedList);
 
-            return CachedSortList.GetObjects();
+            return CachedList.ToArray();
         }
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetObjectsInRange(Vector2f pos, float range, QuadTreeResultList results)
+        public void GetObjectsInRange(Vector2f pos, float range, IList<Transformable> results)
         {
             AllNearestNeighborsSearch(pos, range * range, results);
         }
@@ -333,7 +333,7 @@ namespace SFQuadTree
             }
         }
 
-        private void AllNearestNeighborsSearch(Vector2f pos, float rangeSquared, QuadTreeResultList results)
+        private void AllNearestNeighborsSearch(Vector2f pos, float rangeSquared, IList<Transformable> results)
         {
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)
@@ -349,7 +349,7 @@ namespace SFQuadTree
                     if (ds > rangeSquared)
                         continue;
 
-                    results.Add(ds, obj);
+                    results.Add(obj);
                 }
                 return;
             }
