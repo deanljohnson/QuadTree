@@ -127,6 +127,10 @@ namespace SFQuadTree
             UpdateTree();
         }
 
+        /// <summary>
+        /// Adds the given <see cref="Transformable"/> to the QuadTree.
+        /// Internal QuadTree is not updated until the next call to Update.
+        /// </summary>
         public void Add(Transformable t)
         {
             if (t == null)
@@ -135,6 +139,10 @@ namespace SFQuadTree
             m_PendingInsertion.Enqueue(t);
         }
 
+        /// <summary>
+        /// Removes the given <see cref="Transformable"/> from the QuadTree.
+        /// Internal QuadTree is not updated until the next call to Update.
+        /// </summary>
         public void Remove(Transformable t)
         {
             if (t == null)
