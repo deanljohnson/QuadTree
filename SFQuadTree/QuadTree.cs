@@ -93,7 +93,6 @@ namespace SFQuadTree
                 //TODO: Implement hasChanged for SFML Transformable
                 if ( /*!m_Objects[i].hasChanged || */CachedHashSet.Contains(m_Objects[i]))
                     continue;
-                
 
                 var obj = m_Objects[i];
                 var current = this;
@@ -418,7 +417,6 @@ namespace SFQuadTree
                     Delete(m_PendingRemoval.Dequeue());
                 }
             }
-            
 
             for (var i = 0; i < m_Objects.Count; i++)
             {
@@ -433,6 +431,7 @@ namespace SFQuadTree
                 BuildTree();
         }
 
+        // TODO: Cleanup
         private void BuildTree()
         {
             if (m_Objects.Count <= NUM_OBJECTS)
@@ -440,7 +439,6 @@ namespace SFQuadTree
                 m_TreeBuilt = true;
                 return; //We are a leaf node - we are done
             }
-
 
             var dimensions = m_Region.Dimensions();
 
@@ -453,6 +451,46 @@ namespace SFQuadTree
                 m_TreeBuilt = true;
                 return;
             }
+
+            MoveObjectsToChildren();
+
+            m_TreeBuilt = true;
+        }
+
+        private void Insert(Transformable obj)
+        {
+            if (obj == null)
+                return;
+
+            if (m_Objects.Count < NUM_OBJECTS && m_ActiveNodes == 0)
+            {
+                m_Objects.Add(obj);
+                return;
+            }
+
+            var dimensions = m_Region.Dimensions();
+
+            //Smallest we can get, no more subdividing
+            //For an octree, all the bounds are cubes, so we only 
+            //need to check one axis it seems
+            if (dimensions.X <= MIN_SIZE
+                /*&& dimensions.y <= MIN_SIZE
+                && dimensions.z <= MIN_SIZE*/)
+            {
+                m_Objects.Add(obj);
+                return;
+            }
+
+            m_Objects.Add(obj);
+            MoveObjectsToChildren();
+        }
+
+        /// <summary>
+        /// Attempts to move all objects at this level of the QuadTree into child nodes
+        /// </summary>
+        private void MoveObjectsToChildren()
+        {
+            var dimensions = m_Region.Dimensions();
 
             var half = dimensions / 2f;
             var halflen = half.X / 1f; //a quarter of the length of a side of this region
@@ -508,73 +546,25 @@ namespace SFQuadTree
 
             for (var i = 0; i < 4; i++)
             {
+                // If there are no objects to insert into child
                 if (octList[i].Count == 0)
                     continue;
 
-                m_ChildNodes[i] = CreateChildNode(quads[i], octList[i]);
-                m_ActiveNodes |= (byte)(1 << i);
-                m_ChildNodes[i].BuildTree();
-            }
-
-            m_TreeBuilt = true;
-        }
-
-        private void Insert(Transformable obj)
-        {
-            if (obj == null)
-                return;
-
-            if (m_Objects.Count < NUM_OBJECTS && m_ActiveNodes == 0)
-            {
-                m_Objects.Add(obj);
-                return;
-            }
-
-            var dimensions = m_Region.Dimensions();
-
-            //Smallest we can get, no more subdividing
-            //For an octree, all the bounds are cubes, so we only 
-            //need to check one axis it seems
-            if (dimensions.X <= MIN_SIZE
-                /*&& dimensions.y <= MIN_SIZE
-                && dimensions.z <= MIN_SIZE*/)
-            {
-                m_Objects.Add(obj);
-                return;
-            }
-
-            var half = dimensions / 2f;
-            var halflen = half.X / 1f; //a quarter of the length of a side of this region
-            var center = m_Region.Center();
-
-            //Create child bounds, using existing values if possible
-            var quads = new FloatRect[4];
-            quads[0] = m_ChildNodes[0]?.m_Region ?? new FloatRect(center + new Vector2f(-halflen, -halflen), half);
-            quads[1] = m_ChildNodes[1]?.m_Region ?? new FloatRect(center + new Vector2f(0, -halflen), half);
-            quads[2] = m_ChildNodes[2]?.m_Region ?? new FloatRect(center, half);
-            quads[3] = m_ChildNodes[3]?.m_Region ?? new FloatRect(center + new Vector2f(-halflen, 0), half);
-
-            var found = false;
-            for (var i = 0; i < 4 && !found; i++)
-            {
-                //TODO: Expand this to deal with objects with bounds, not just points
-                if (quads[i].Contains(obj.Position.X, obj.Position.Y))
+                // If the child node does not exist
+                if ((m_ActiveNodes & (1 << i)) == 0)
                 {
-                    if (m_ChildNodes[i] != null)
+                    m_ChildNodes[i] = CreateChildNode(quads[i], octList[i]);
+                    m_ActiveNodes |= (byte) (1 << i);
+                    m_ChildNodes[i].BuildTree();
+                }
+                else
+                {
+                    for (int j = 0; j < octList[i].Count; j++)
                     {
-                        m_ChildNodes[i].Insert(obj);
+                        m_ChildNodes[i].Insert(octList[i][j]);
                     }
-                    else
-                    {
-                        m_ChildNodes[i] = CreateChildNode(quads[i], new List<Transformable> { obj });
-                        m_ActiveNodes |= (byte)(1 << i);
-                        //m_ChildNodes[i].BuildTree();
-                    }
-                    found = true;
                 }
             }
-            if (!found)
-                m_Objects.Add(obj);
         }
 
         private bool Delete(Transformable t)
