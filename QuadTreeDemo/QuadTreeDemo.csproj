@@ -7,8 +7,8 @@
     <ProjectGuid>{68EF5C55-3BF8-4BFC-8A76-EE148A09B9D0}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>QuadTreeTest</RootNamespace>
-    <AssemblyName>QuadTreeTest</AssemblyName>
+    <RootNamespace>QuadTreeDemo</RootNamespace>
+    <AssemblyName>QuadTreeDemo</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -63,7 +63,7 @@
   <ItemGroup>
     <Compile Include="Clock.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="QuadTreeTest.cs" />
+    <Compile Include="QuadTreeDemo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SFQuadTree\SFQuadTree.csproj">
