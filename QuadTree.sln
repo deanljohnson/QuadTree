@@ -1,16 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFQuadTree", "SFQuadTree\SFQuadTree.csproj", "{E7B063F4-0385-4643-ADCC-FB6471803644}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuadTreeDemo", "QuadTreeDemo\QuadTreeDemo.csproj", "{68EF5C55-3BF8-4BFC-8A76-EE148A09B9D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuadTreeTest", "QuadTreeTest\QuadTreeTest.csproj", "{48A24BC0-4730-4E31-B0B1-9748FD2F9F1E}"
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -24,8 +23,15 @@ Global
 		{68EF5C55-3BF8-4BFC-8A76-EE148A09B9D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68EF5C55-3BF8-4BFC-8A76-EE148A09B9D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68EF5C55-3BF8-4BFC-8A76-EE148A09B9D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48A24BC0-4730-4E31-B0B1-9748FD2F9F1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48A24BC0-4730-4E31-B0B1-9748FD2F9F1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48A24BC0-4730-4E31-B0B1-9748FD2F9F1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48A24BC0-4730-4E31-B0B1-9748FD2F9F1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
