@@ -36,7 +36,7 @@ namespace QuadTreeDemo
 
         private float m_QueeryRange = 300f;
 
-        private TestType TestType = TestType.Console;
+        private TestType TestType = TestType.Graphical;
 
         public QuadTreeDemo()
         {
@@ -234,7 +234,7 @@ namespace QuadTreeDemo
 
         public void Draw(RenderTarget target, RenderStates states)
         {
-            DrawAllRegions(target, states);
+            QuadTreeVisualization.DrawRegions(m_Tree, target, states, new Color(255,0,0,100));
 
             if (m_ShowCircles)
             {
@@ -254,28 +254,6 @@ namespace QuadTreeDemo
                 Origin = new Vector2f(m_QueeryRange, m_QueeryRange)
             };
             target.Draw(range, states);*/
-        }
-
-        private void DrawAllRegions(RenderTarget target, RenderStates states)
-        {
-            var regions = new List<FloatRect>();
-            m_Tree.GetAllRegions(regions);
-
-            var c = Color.Red;
-            var shape = new RectangleShape
-            {
-                FillColor = Color.Transparent,
-                OutlineThickness = 1f,
-                OutlineColor = c
-            };
-
-            foreach (var fr in regions)
-            {
-                shape.OutlineColor = new Color(c.R, (byte) (c.G + (255 * 1 / (fr.Width / m_Bounds.Width))), c.B, 100);
-                shape.Size = fr.Dimensions();
-                shape.Position = fr.Min();
-                target.Draw(shape, states);
-            }
         }
 
         private void RefreshTest()

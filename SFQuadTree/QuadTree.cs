@@ -34,6 +34,8 @@ namespace SFQuadTree
             get { return m_Objects.Count + m_ChildNodes.Where(c => c != null).Sum(c => c.Count); }
         }
 
+        public FloatRect Bounds => m_Region;
+
         private QuadTree(FloatRect region, List<Transformable> objects, QuadTree parent)
         {
             if (objects == null)
