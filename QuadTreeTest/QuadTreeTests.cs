@@ -9,6 +9,7 @@ using SFQuadTree;
 
 namespace QuadTreeTest
 {
+    // TODO: test failing cases
     [TestClass]
     public class QuadTreeTests
     {
@@ -103,45 +104,171 @@ namespace QuadTreeTest
             tree.Update();
 
             Transformable[] results = tree.GetKClosestObjects(new Vector2f(1, 1), 1);
-            AssertHaveSameElements(results, new []{ objs[0] });
+            HaveSameElements(results, new []{ objs[0] });
 
             results = tree.GetKClosestObjects(new Vector2f(1, 1), 3);
-            AssertHaveSameElements(results, new[] { objs[0], objs[1], objs[2] });
+            Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2] }));
 
             results = tree.GetKClosestObjects(new Vector2f(51, 51), 3);
-            AssertHaveSameElements(results, new[] { objs[1], objs[2], objs[3] });
+            Assert.IsTrue(HaveSameElements(results, new[] { objs[1], objs[2], objs[3] }));
 
             results = tree.GetKClosestObjects(new Vector2f(51, 51), 3, 10f);
-            AssertHaveSameElements(results, new[] { objs[3] });
+            Assert.IsTrue(HaveSameElements(results, new[] { objs[3] }));
 
             PriorityQueue<Transformable> resultsQueue = new PriorityQueue<Transformable>(true);
             tree.GetKClosestObjects(new Vector2f(1, 1), 1, float.MaxValue, resultsQueue);
-            AssertHaveSameElements(resultsQueue.ToArray(), new[] { objs[0] });
+            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[0] }));
 
             resultsQueue.Clear();
             tree.GetKClosestObjects(new Vector2f(1, 1), 3, float.MaxValue, resultsQueue);
-            AssertHaveSameElements(resultsQueue.ToArray(), new[] { objs[0], objs[1], objs[2] });
+            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[0], objs[1], objs[2] }));
 
             resultsQueue.Clear();
             tree.GetKClosestObjects(new Vector2f(51, 51), 3, float.MaxValue, resultsQueue);
-            AssertHaveSameElements(resultsQueue.ToArray(), new[] { objs[1], objs[2], objs[3] });
+            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[1], objs[2], objs[3] }));
 
             resultsQueue.Clear();
             tree.GetKClosestObjects(new Vector2f(51, 51), 3, 10f, resultsQueue);
-            AssertHaveSameElements(resultsQueue.ToArray(), new[] { objs[3] });
+            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[3] }));
         }
 
-        private void AssertHaveSameElements(Transformable[] a, Transformable[] b)
+        [TestMethod]
+        public void GetObjectsInRangeTest()
+        {
+            QuadTree tree = new QuadTree(m_Bounds);
+
+            TestObject[] objs = {
+                new TestObject(0,0),
+                new TestObject(10,0),
+                new TestObject(7,7),
+                new TestObject(50,50)
+            };
+
+            for (int i = 0; i < objs.Length; i++)
+            {
+                tree.Add(objs[i]);
+            }
+
+            tree.Update();
+
+            Transformable[] results = tree.GetObjectsInRange(new Vector2f(-1, -1), 1);
+            Assert.IsTrue(HaveSameElements(results, new Transformable[0]));
+
+            results = tree.GetObjectsInRange(new Vector2f(0, 0), 5);
+            Assert.IsTrue(HaveSameElements(results, new [] { objs[0] }));
+
+            results = tree.GetObjectsInRange(new Vector2f(5, 5), 10);
+            Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2] }));
+
+            results = tree.GetObjectsInRange(new Vector2f(5, 5));
+            Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2], objs[3] }));
+
+            List<Transformable> resultsList = new List<Transformable>();
+            tree.GetObjectsInRange(new Vector2f(-1, -1), 1, resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new Transformable[0]));
+
+            resultsList.Clear();
+            tree.GetObjectsInRange(new Vector2f(0, 0), 5, resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0] }));
+
+            resultsList.Clear();
+            tree.GetObjectsInRange(new Vector2f(5, 5), 10, resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0], objs[1], objs[2] }));
+
+            resultsList.Clear();
+            tree.GetObjectsInRange(new Vector2f(5, 5), float.MaxValue, resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0], objs[1], objs[2], objs[3] }));
+        }
+
+        [TestMethod]
+        public void GetObjectsInRectTest()
+        {
+            QuadTree tree = new QuadTree(m_Bounds);
+
+            TestObject[] objs = {
+                new TestObject(0,0),
+                new TestObject(10,0),
+                new TestObject(7,7),
+                new TestObject(50,50)
+            };
+
+            for (int i = 0; i < objs.Length; i++)
+            {
+                tree.Add(objs[i]);
+            }
+
+            tree.Update();
+
+            Transformable[] results = tree.GetObjectsInRect(new FloatRect(-1, -1, 0, 0));
+            Assert.IsTrue(HaveSameElements(results, new Transformable[0]));
+
+            results = tree.GetObjectsInRect(new FloatRect(8, -1, 7, 7));
+            Assert.IsTrue(HaveSameElements(results, new []{ objs[1] }));
+
+            results = tree.GetObjectsInRect(new FloatRect(-1, -1, 15, 20));
+            Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2] }));
+
+            results = tree.GetObjectsInRect(new FloatRect(-1, -1, 60, 60));
+            Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2], objs[3] }));
+
+            List<Transformable> resultsList = new List<Transformable>();
+            tree.GetObjectsInRect(new FloatRect(-1, -1, 0, 0), resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new Transformable[0]));
+
+            resultsList.Clear();
+            tree.GetObjectsInRect(new FloatRect(8, -1, 7, 7), resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[1] }));
+
+            resultsList.Clear();
+            tree.GetObjectsInRect(new FloatRect(-1, -1, 15, 20), resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0], objs[1], objs[2] }));
+
+            resultsList.Clear();
+            tree.GetObjectsInRect(new FloatRect(-1, -1, 60, 60), resultsList);
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0], objs[1], objs[2], objs[3] }));
+        }
+
+        [TestMethod]
+        public void GetClosestObjectTest()
+        {
+            QuadTree tree = new QuadTree(m_Bounds);
+
+            TestObject[] objs = {
+                new TestObject(0,0),
+                new TestObject(10,0),
+                new TestObject(7,7),
+                new TestObject(50,50)
+            };
+
+            for (int i = 0; i < objs.Length; i++)
+            {
+                tree.Add(objs[i]);
+            }
+
+            tree.Update();
+
+            Assert.AreEqual(tree.GetClosestObject(new Vector2f(0,0)), objs[0]);
+            Assert.AreEqual(tree.GetClosestObject(new Vector2f(5,5)), objs[2]);
+            Assert.AreEqual(tree.GetClosestObject(new Vector2f(5,5)), objs[2]);
+            Assert.AreEqual(tree.GetClosestObject(new Vector2f(5,5), 1), null);
+            Assert.AreEqual(tree.GetClosestObject(new Vector2f(-1,-1)), objs[0]);
+        }
+
+        private bool HaveSameElements(Transformable[] a, Transformable[] b)
         {
             for (int i = 0; i < a.Length; i++)
             {
-                Assert.IsTrue(b.Contains(a[i]));
+                if (!b.Contains(a[i]))
+                    return false;
             }
 
             for (int i = 0; i < b.Length; i++)
             {
-                Assert.IsTrue(a.Contains(b[i]));
+                if (!a.Contains(b[i]))
+                    return false;
             }
+
+            return true;
         }
     }
 }
