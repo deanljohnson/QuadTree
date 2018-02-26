@@ -36,7 +36,7 @@ namespace QuadTreeDemo
 
         private float m_QueeryRange = 300f;
 
-        private TestType TestType = TestType.Graphical;
+        private TestType TestType = TestType.ConsoleThreaded;
 
         public QuadTreeDemo()
         {
@@ -188,48 +188,55 @@ namespace QuadTreeDemo
                 WrapPosition(testObject.Key);
             }
 
-            m_Tree.Update();
-
-            // Create threads for various queeries
-            List<Thread> threads = new List<Thread>();
-            for (int i = 0; i < 5; i++)
+            while (true)
             {
-                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
-                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
-                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
-                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
-                threads.Add(new Thread(() => { m_Tree.GetClosestObject(GetRandomPos(), (float) (100 + Random.NextDouble() * 400)); }));
+                m_Tree.Update();
 
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                // Create threads for various queeries
+                List<Thread> threads = new List<Thread>();
 
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                ManualResetEvent start = new ManualResetEvent(false);
 
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
-                threads.Add(new Thread(() => { m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetClosestObject(GetRandomPos(), (float)(100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetClosestObject(GetRandomPos(), (float)(100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetClosestObject(GetRandomPos(), (float)(100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetClosestObject(GetRandomPos(), (float)(100 + Random.NextDouble() * 400)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetClosestObject(GetRandomPos(), (float)(100 + Random.NextDouble() * 400)); }));
+
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
+
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>()); }));
+
+                for (int i = 0; i < threads.Count; i++)
+                {
+                    threads[i].Start();
+                }
+
+                start.Set();
+
+                for (int i = 0; i < threads.Count; i++)
+                {
+                    threads[i].Join();
+                }
+
+                start.Reset();
+
+                Console.WriteLine($"Executed parallel update with dt {dt}");
             }
-
-            for (int i = 0; i < threads.Count; i++)
-            {
-                threads[i].Start();
-            }
-
-            for (int i = 0; i < threads.Count; i++)
-            {
-                threads[i].Join();
-            }
-
-            Console.WriteLine($"Executed parallel update with dt {dt}");
         }
 
         public void Draw(RenderTarget target, RenderStates states)
