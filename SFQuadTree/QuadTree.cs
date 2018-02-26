@@ -155,8 +155,12 @@ namespace SFQuadTree
         /// Gets the K closest objects to a given position.
         /// This version of the queery is not thread safe.
         /// </summary>
-        public Transformable[] GetKClosestObjects(Vector2f pos, int k, float range = float.MaxValue)
+        public Transformable[] GetKClosestObjects(Vector2f pos, uint k, float range = float.MaxValue)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+#endif
             CachedSortList.Clear();
             float r = range * range;
             KNearestNeighborSearch(ref pos, k, ref r, CachedSortList);
@@ -169,6 +173,10 @@ namespace SFQuadTree
         /// </summary>
         public Transformable[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+#endif
             CachedList.Clear();
             AllNearestNeighborsSearch(pos, range * range, CachedList);
 
@@ -206,8 +214,14 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetKClosestObjects(Vector2f pos, int k, float range, PriorityQueue<Transformable> results)
+        public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<Transformable> results)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+            if (results == null)
+                throw new ArgumentException("Results queue cannot be null");
+#endif
             float r = range * range;
             KNearestNeighborSearch(ref pos, k, ref r, results);
         }
@@ -219,6 +233,12 @@ namespace SFQuadTree
         /// </summary>
         public void GetObjectsInRange(Vector2f pos, float range, IList<Transformable> results)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+            if (results == null)
+                throw new ArgumentException("Results list cannot be null");
+#endif
             AllNearestNeighborsSearch(pos, range * range, results);
         }
 
@@ -280,7 +300,7 @@ namespace SFQuadTree
             return closest;
         }
 
-        private void KNearestNeighborSearch(ref Vector2f pos, int k, ref float rangeSquared, PriorityQueue<Transformable> results)
+        private void KNearestNeighborSearch(ref Vector2f pos, uint k, ref float rangeSquared, PriorityQueue<Transformable> results)
         {
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)

@@ -9,7 +9,6 @@ using SFQuadTree;
 
 namespace QuadTreeTest
 {
-    // TODO: test failing cases
     [TestClass]
     public class QuadTreeTests
     {
@@ -54,11 +53,22 @@ namespace QuadTreeTest
             TestObject one = new TestObject();
             TestObject two = new TestObject();
 
+            tree.Add(null);
+            Assert.AreEqual(tree.Count, 0);
+            tree.Update();
+            Assert.AreEqual(tree.Count, 0);
+
             tree.Add(one);
             Assert.AreEqual(tree.Count, 0);
             tree.Update();
             Assert.AreEqual(tree.Count, 1);
+
             tree.Add(two);
+            tree.Update();
+            Assert.AreEqual(tree.Count, 2);
+
+            tree.Remove(null);
+            Assert.AreEqual(tree.Count, 2);
             tree.Update();
             Assert.AreEqual(tree.Count, 2);
 
@@ -115,6 +125,11 @@ namespace QuadTreeTest
             results = tree.GetKClosestObjects(new Vector2f(51, 51), 3, 10f);
             Assert.IsTrue(HaveSameElements(results, new[] { objs[3] }));
 
+#if DEBUG
+            Assert.ThrowsException<ArgumentException>(
+                () => tree.GetKClosestObjects(new Vector2f(51, 51), 3, -10f));
+#endif
+
             PriorityQueue<Transformable> resultsQueue = new PriorityQueue<Transformable>(true);
             tree.GetKClosestObjects(new Vector2f(1, 1), 1, float.MaxValue, resultsQueue);
             Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[0] }));
@@ -130,6 +145,14 @@ namespace QuadTreeTest
             resultsQueue.Clear();
             tree.GetKClosestObjects(new Vector2f(51, 51), 3, 10f, resultsQueue);
             Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[3] }));
+
+#if DEBUG
+            resultsQueue.Clear();
+            Assert.ThrowsException<ArgumentException>(
+                () => tree.GetKClosestObjects(new Vector2f(51, 51), 3, -10f, resultsQueue));
+            Assert.ThrowsException<ArgumentException>(
+                () => tree.GetKClosestObjects(new Vector2f(51, 51), 3, 10f, null));
+#endif
         }
 
         [TestMethod]
@@ -163,6 +186,11 @@ namespace QuadTreeTest
             results = tree.GetObjectsInRange(new Vector2f(5, 5));
             Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2], objs[3] }));
 
+#if DEBUG
+            Assert.ThrowsException<ArgumentException>(
+                () => tree.GetObjectsInRange(new Vector2f(0, 0), -5f));
+#endif
+
             List<Transformable> resultsList = new List<Transformable>();
             tree.GetObjectsInRange(new Vector2f(-1, -1), 1, resultsList);
             Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new Transformable[0]));
@@ -178,6 +206,13 @@ namespace QuadTreeTest
             resultsList.Clear();
             tree.GetObjectsInRange(new Vector2f(5, 5), float.MaxValue, resultsList);
             Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0], objs[1], objs[2], objs[3] }));
+
+#if DEBUG
+            Assert.ThrowsException<ArgumentException>(
+                () => tree.GetObjectsInRange(new Vector2f(0, 0), -5f, resultsList));
+            Assert.ThrowsException<ArgumentException>(
+                () => tree.GetObjectsInRange(new Vector2f(0, 0), 5f, null));
+#endif
         }
 
         [TestMethod]
