@@ -7,8 +7,9 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using SFQuadTree;
+using Clock = QuadTreeTest.Clock;
 
-namespace QuadTreeTest
+namespace QuadTreeDemo
 {
     internal enum TestType
     {
@@ -17,7 +18,7 @@ namespace QuadTreeTest
         ConsoleThreaded
     }
 
-    public class QuadTreeTest : Drawable
+    public class QuadTreeDemo : Drawable
     {
         private static readonly Random Random = new Random();
         private readonly QuadTree m_Tree;
@@ -37,7 +38,7 @@ namespace QuadTreeTest
 
         private TestType TestType = TestType.Console;
 
-        public QuadTreeTest()
+        public QuadTreeDemo()
         {
             m_Bounds = new FloatRect(new Vector2f(0, 0), (Vector2f) Game.Window.Size);
 

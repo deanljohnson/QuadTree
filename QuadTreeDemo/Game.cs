@@ -4,7 +4,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-namespace QuadTreeTest
+namespace QuadTreeDemo
 {
     public static class Game
     {
@@ -15,12 +15,12 @@ namespace QuadTreeTest
         private static long LastTime { get; set; }
 
         public static RenderWindow Window { get; private set; }
-        public static QuadTreeTest Test { get; set; }
+        public static QuadTreeDemo Demo { get; set; }
 
         public static void Main()
         {
             InitializeWindow();
-            Test = new QuadTreeTest();
+            Demo = new QuadTreeDemo();
             Start();
         }
 
@@ -44,12 +44,12 @@ namespace QuadTreeTest
 
         private static void Update(float dt)
         {
-            Test.Update(dt);
+            Demo.Update(dt);
         }
 
         private static void Render()
         {
-            Test.Draw(Window, RenderStates.Default);
+            Demo.Draw(Window, RenderStates.Default);
         }
 
         private static float GetDeltaTime()
