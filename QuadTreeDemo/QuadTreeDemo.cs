@@ -243,7 +243,6 @@ namespace QuadTreeDemo
                     target.Draw(circleShape.Key, states);
                 }
             }
-            
 
             /*var range = new CircleShape(m_QueeryRange)
             {
