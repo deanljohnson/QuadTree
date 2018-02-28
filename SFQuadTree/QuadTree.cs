@@ -13,7 +13,6 @@ namespace SFQuadTree
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
         // Note that these are not used in function chains claiming to be thread safe
         private static readonly PriorityQueue<T> CachedSortList = new PriorityQueue<T>(true);
-        private static readonly HashSet<T> CachedHashSet = new HashSet<T>();
         private static readonly List<T> CachedList = new List<T>();
 
         private readonly Queue<T> m_PendingInsertion;
@@ -86,32 +85,39 @@ namespace SFQuadTree
                 }
             }
 
-            CachedHashSet.Clear(); //Used as scratch to track items already re-inserted
-                                   //Move children up to parent if they have moved out of our bounds
+            //Move children up to parent if they have moved out of our bounds
             //var movedObjects = m_Objects.ToArray();
             for (var i = 0; i < m_Objects.Count; i++)
             {
                 //If an object hasn't moved, then it is still in the correct octree
                 //CachedHashSet contains items that we already re-inserted
+                //This can occur if an object moves out of the roots region
                 //TODO: Implement hasChanged for SFML Transformable
-                if ( /*!m_Objects[i].hasChanged || */CachedHashSet.Contains(m_Objects[i]))
+                if (/*!m_Objects[i].hasChanged || */false)
                     continue;
 
                 var obj = m_Objects[i];
-                var current = this;
 
-                //TODO: rework this to work with objects that have bounds
-                while (!current.m_Region.Contains(obj.Position.X, obj.Position.Y))
+                if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
                 {
-                    if (current.m_Parent != null) current = current.m_Parent;
-                    else break;
+                    // Object is outside root's region
+                    // Shouldn't break anything, but objects
+                    // won't show up in any queeries
+                    if (m_Parent == null)
+                        continue;
+
+                    var current = m_Parent;
+
+                    // Find parent that can hold this object
+                    while (!current.m_Region.Contains(obj.Position.X, obj.Position.Y))
+                    {
+                        if (current.m_Parent != null) current = current.m_Parent;
+                        else break; // Either the root has to take it, or it is not within the roots region either
+                    }
+
+                    m_Objects.RemoveAt(i--);
+                    current.Insert(obj);
                 }
-
-
-                m_Objects.RemoveAt(i--);
-                current.Insert(obj);
-            
-                CachedHashSet.Add(obj);
             }
 
             //prune out any dead branches in the tree
@@ -126,6 +132,7 @@ namespace SFQuadTree
             }
 
             UpdateTree();
+            VerifyTree(this);
         }
 
         /// <summary>
@@ -486,21 +493,17 @@ namespace SFQuadTree
                 return;
             }
 
+            m_Objects.Add(obj);
+
             var dimensions = m_Region.Dimensions();
 
             //Smallest we can get, no more subdividing
-            //For an octree, all the bounds are cubes, so we only 
-            //need to check one axis it seems
-            if (dimensions.X <= MIN_SIZE
-                /*&& dimensions.y <= MIN_SIZE
-                && dimensions.z <= MIN_SIZE*/)
+            //For an quadtree, all the bounds are squares, so we only 
+            //need to check one axis
+            if (dimensions.X > MIN_SIZE)
             {
-                m_Objects.Add(obj);
-                return;
+                MoveObjectsToChildren();
             }
-
-            m_Objects.Add(obj);
-            MoveObjectsToChildren();
         }
 
         /// <summary>
@@ -511,7 +514,7 @@ namespace SFQuadTree
             var dimensions = m_Region.Dimensions();
 
             var half = dimensions / 2f;
-            var halflen = half.X / 1f; //a quarter of the length of a side of this region
+            var halflen = half.X;
             var center = m_Region.Center();
 
             //Create child bounds
@@ -607,7 +610,7 @@ namespace SFQuadTree
                 ? null
                 : new QuadTree<T>(region, objects, this);
         }
-        #endregion
+#endregion
 
         public void GetAllRegions(List<FloatRect> regions)
         {
@@ -615,6 +618,21 @@ namespace SFQuadTree
             foreach (var childNode in m_ChildNodes)
             {
                 childNode?.GetAllRegions(regions);
+            }
+        }
+
+        public static void VerifyTree(QuadTree<T> tree)
+        {
+            if (tree.m_Objects.Count > 0)
+                Debug.Assert(tree.m_ActiveNodes == 0);
+            foreach (var obj in tree.m_Objects)
+            {
+                Debug.Assert(tree.m_Region.Contains(obj.Position.X, obj.Position.Y));
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (tree.m_ChildNodes[i] != null)
+                    VerifyTree(tree.m_ChildNodes[i]);
             }
         }
     }
