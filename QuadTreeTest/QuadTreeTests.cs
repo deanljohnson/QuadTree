@@ -46,6 +46,9 @@ namespace QuadTreeTest
             Assert.AreEqual(tree2.Count, 2);
 
             Assert.ThrowsException<NullReferenceException>(() => new QuadTree<TestObject>(m_Bounds, null));
+
+            FloatRect nonSquareBounds = new FloatRect(0,0,5,10);
+            Assert.ThrowsException<ArgumentException>(() => new QuadTree<TestObject>(nonSquareBounds));
         }
 
         [TestMethod]
