@@ -35,20 +35,20 @@ namespace QuadTreeTest
         [TestMethod]
         public void ConstructorTests()
         {
-            QuadTree tree = new QuadTree(m_Bounds);
+            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
             Assert.AreEqual(tree.Count, 0);
 
-            QuadTree tree2 = new QuadTree(m_Bounds, 
-                new List<Transformable> {new TestObject(), new TestObject()});
+            QuadTree<TestObject> tree2 = new QuadTree<TestObject>(m_Bounds, 
+                new List<TestObject> {new TestObject(), new TestObject()});
             Assert.AreEqual(tree2.Count, 2);
 
-            Assert.ThrowsException<NullReferenceException>(() => new QuadTree(m_Bounds, null));
+            Assert.ThrowsException<NullReferenceException>(() => new QuadTree<TestObject>(m_Bounds, null));
         }
 
         [TestMethod]
         public void AddRemoveTest()
         {
-            QuadTree tree = new QuadTree(m_Bounds);
+            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
 
             TestObject one = new TestObject();
             TestObject two = new TestObject();
@@ -97,7 +97,7 @@ namespace QuadTreeTest
         [TestMethod]
         public void GetKClosestObjectsTest()
         {
-            QuadTree tree = new QuadTree(m_Bounds);
+            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
 
             TestObject[] objs = {
                 new TestObject(0,0), 
@@ -130,7 +130,7 @@ namespace QuadTreeTest
                 () => tree.GetKClosestObjects(new Vector2f(51, 51), 3, -10f));
 #endif
 
-            PriorityQueue<Transformable> resultsQueue = new PriorityQueue<Transformable>(true);
+            PriorityQueue<TestObject> resultsQueue = new PriorityQueue<TestObject>(true);
             tree.GetKClosestObjects(new Vector2f(1, 1), 1, float.MaxValue, resultsQueue);
             Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[0] }));
 
@@ -158,7 +158,7 @@ namespace QuadTreeTest
         [TestMethod]
         public void GetObjectsInRangeTest()
         {
-            QuadTree tree = new QuadTree(m_Bounds);
+            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
 
             TestObject[] objs = {
                 new TestObject(0,0),
@@ -191,9 +191,9 @@ namespace QuadTreeTest
                 () => tree.GetObjectsInRange(new Vector2f(0, 0), -5f));
 #endif
 
-            List<Transformable> resultsList = new List<Transformable>();
+            List<TestObject> resultsList = new List<TestObject>();
             tree.GetObjectsInRange(new Vector2f(-1, -1), 1, resultsList);
-            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new Transformable[0]));
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new TestObject[0]));
 
             resultsList.Clear();
             tree.GetObjectsInRange(new Vector2f(0, 0), 5, resultsList);
@@ -218,7 +218,7 @@ namespace QuadTreeTest
         [TestMethod]
         public void GetObjectsInRectTest()
         {
-            QuadTree tree = new QuadTree(m_Bounds);
+            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
 
             TestObject[] objs = {
                 new TestObject(0,0),
@@ -234,8 +234,8 @@ namespace QuadTreeTest
 
             tree.Update();
 
-            Transformable[] results = tree.GetObjectsInRect(new FloatRect(-1, -1, 0, 0));
-            Assert.IsTrue(HaveSameElements(results, new Transformable[0]));
+            TestObject[] results = tree.GetObjectsInRect(new FloatRect(-1, -1, 0, 0));
+            Assert.IsTrue(HaveSameElements(results, new TestObject[0]));
 
             results = tree.GetObjectsInRect(new FloatRect(8, -1, 7, 7));
             Assert.IsTrue(HaveSameElements(results, new []{ objs[1] }));
@@ -246,9 +246,9 @@ namespace QuadTreeTest
             results = tree.GetObjectsInRect(new FloatRect(-1, -1, 60, 60));
             Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2], objs[3] }));
 
-            List<Transformable> resultsList = new List<Transformable>();
+            List<TestObject> resultsList = new List<TestObject>();
             tree.GetObjectsInRect(new FloatRect(-1, -1, 0, 0), resultsList);
-            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new Transformable[0]));
+            Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new TestObject[0]));
 
             resultsList.Clear();
             tree.GetObjectsInRect(new FloatRect(8, -1, 7, 7), resultsList);
@@ -266,7 +266,7 @@ namespace QuadTreeTest
         [TestMethod]
         public void GetClosestObjectTest()
         {
-            QuadTree tree = new QuadTree(m_Bounds);
+            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
 
             TestObject[] objs = {
                 new TestObject(0,0),
@@ -289,7 +289,7 @@ namespace QuadTreeTest
             Assert.AreEqual(tree.GetClosestObject(new Vector2f(-1,-1)), objs[0]);
         }
 
-        private bool HaveSameElements(Transformable[] a, Transformable[] b)
+        private bool HaveSameElements<T>(T[] a, T[] b)
         {
             for (int i = 0; i < a.Length; i++)
             {
