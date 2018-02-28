@@ -36,6 +36,8 @@ namespace SFQuadTree
 
         private QuadTree(FloatRect region, List<T> objects, QuadTree<T> parent)
         {
+            if (region.Width != region.Height)
+                throw new ArgumentException("QuadTree height must equal QuadTree width");
             if (objects == null)
                 throw new NullReferenceException("Cannot have a null list of objects");
 
@@ -80,7 +82,6 @@ namespace SFQuadTree
             {
                 if ((m_ActiveNodes & (1 << i)) != 0)
                 {
-                    //Debug.Assert(m_ChildNodes[i] != null);
                     m_ChildNodes[i].Update();
                 }
             }
@@ -632,7 +633,10 @@ namespace SFQuadTree
             for (int i = 0; i < 4; i++)
             {
                 if (tree.m_ChildNodes[i] != null)
+                {
+                    Debug.Assert((tree.m_ActiveNodes & (1 << i)) > 0);
                     VerifyTree(tree.m_ChildNodes[i]);
+                }
             }
         }
     }
