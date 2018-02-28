@@ -114,13 +114,13 @@ namespace SFQuadTree
             }
 
             //prune out any dead branches in the tree
-            for (int flags = m_ActiveNodes, index = 0; flags > 0; flags >>= 1, index++)
+            for (var i = 0; i < 4; i++)
             {
-                if ((flags & 1) == 1 && m_ChildNodes[index].m_Objects.Count == 0 &&
-                    m_ChildNodes[index].m_ActiveNodes == 0)
+                if ((m_ActiveNodes & (1 << i)) != 0 && m_ChildNodes[i].m_Objects.Count == 0 &&
+                    m_ChildNodes[i].m_ActiveNodes == 0)
                 {
-                    m_ChildNodes[index] = null;
-                    m_ActiveNodes ^= (byte)(1 << index);       //remove the node from the active nodes flag list
+                    m_ChildNodes[i] = null;
+                    m_ActiveNodes ^= (byte)(1 << i);
                 }
             }
 

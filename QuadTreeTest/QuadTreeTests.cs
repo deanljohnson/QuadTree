@@ -9,6 +9,7 @@ using SFQuadTree;
 
 namespace QuadTreeTest
 {
+    // TODO: add tests for moving objects and proper tree updating
     [TestClass]
     public class QuadTreeTests
     {
