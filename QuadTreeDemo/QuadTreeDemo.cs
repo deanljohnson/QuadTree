@@ -21,7 +21,7 @@ namespace QuadTreeDemo
     public class QuadTreeDemo : Drawable
     {
         private static readonly Random Random = new Random();
-        private readonly QuadTree m_Tree;
+        private readonly QuadTree<Transformable> m_Tree;
         private readonly Dictionary<CircleShape, Vector2f> m_TestObjects = new Dictionary<CircleShape, Vector2f>(); 
 
         private float m_TestRefreshRate = 2f;
@@ -36,7 +36,7 @@ namespace QuadTreeDemo
 
         private float m_QueeryRange = 300f;
 
-        private TestType TestType = TestType.ConsoleThreaded;
+        private TestType TestType = TestType.Console;
 
         public QuadTreeDemo()
         {
@@ -55,7 +55,7 @@ namespace QuadTreeDemo
             m_MainTestObject = m_TestObjects.First().Key;
             m_MainTestObject.Position = m_Bounds.Center();
 
-            m_Tree = new QuadTree(m_Bounds, m_TestObjects.Select(kvp => kvp.Key).Cast<Transformable>().ToList());
+            m_Tree = new QuadTree<Transformable>(m_Bounds, m_TestObjects.Select(kvp => kvp.Key).Cast<Transformable>().ToList());
 
             Game.Window.KeyPressed += (sender, args) =>
             {

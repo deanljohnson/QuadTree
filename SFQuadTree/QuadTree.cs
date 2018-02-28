@@ -8,22 +8,22 @@ using SFML.System;
 
 namespace SFQuadTree
 {
-    public class QuadTree
+    public class QuadTree<T> where T : Transformable
     {
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
         // Note that these are not used in function chains claiming to be thread safe
-        private static readonly PriorityQueue<Transformable> CachedSortList = new PriorityQueue<Transformable>(true);
-        private static readonly HashSet<Transformable> CachedHashSet = new HashSet<Transformable>();
-        private static readonly List<Transformable> CachedList = new List<Transformable>();
+        private static readonly PriorityQueue<T> CachedSortList = new PriorityQueue<T>(true);
+        private static readonly HashSet<T> CachedHashSet = new HashSet<T>();
+        private static readonly List<T> CachedList = new List<T>();
 
-        private readonly Queue<Transformable> m_PendingInsertion;
-        private readonly Queue<Transformable> m_PendingRemoval;
+        private readonly Queue<T> m_PendingInsertion;
+        private readonly Queue<T> m_PendingRemoval;
         private bool m_TreeBuilt;
 
         private FloatRect m_Region;
-        private readonly QuadTree m_Parent;
-        private readonly List<Transformable> m_Objects;
-        private readonly QuadTree[] m_ChildNodes = new QuadTree[4];
+        private readonly QuadTree<T> m_Parent;
+        private readonly List<T> m_Objects;
+        private readonly QuadTree<T>[] m_ChildNodes = new QuadTree<T>[4];
 
         private byte m_ActiveNodes; //Used a a bitmask to track active nodes
         private const int MIN_SIZE = 5;
@@ -36,7 +36,7 @@ namespace SFQuadTree
 
         public FloatRect Bounds => m_Region;
 
-        private QuadTree(FloatRect region, List<Transformable> objects, QuadTree parent)
+        private QuadTree(FloatRect region, List<T> objects, QuadTree<T> parent)
         {
             if (objects == null)
                 throw new NullReferenceException("Cannot have a null list of objects");
@@ -48,18 +48,18 @@ namespace SFQuadTree
             //If we are a child, we wont need these allocations
             if (parent == null)
             {
-                m_PendingInsertion = new Queue<Transformable>();
-                m_PendingRemoval = new Queue<Transformable>();
+                m_PendingInsertion = new Queue<T>();
+                m_PendingRemoval = new Queue<T>();
             }
         }
 
-        public QuadTree(FloatRect region, List<Transformable> objects)
+        public QuadTree(FloatRect region, List<T> objects)
             : this (region, objects, null)
         {
         }
 
         public QuadTree(FloatRect region)
-            : this(region, new List<Transformable>(), null)
+            : this(region, new List<T>(), null)
         {
         }
 
@@ -131,7 +131,7 @@ namespace SFQuadTree
         /// Adds the given <see cref="Transformable"/> to the QuadTree.
         /// Internal QuadTree is not updated until the next call to Update.
         /// </summary>
-        public void Add(Transformable t)
+        public void Add(T t)
         {
             if (t == null)
                 return;
@@ -143,7 +143,7 @@ namespace SFQuadTree
         /// Removes the given <see cref="Transformable"/> from the QuadTree.
         /// Internal QuadTree is not updated until the next call to Update.
         /// </summary>
-        public void Remove(Transformable t)
+        public void Remove(T t)
         {
             if (t == null)
                 return;
@@ -157,7 +157,7 @@ namespace SFQuadTree
         /// Gets the K closest objects to a given position.
         /// This version of the queery is not thread safe.
         /// </summary>
-        public Transformable[] GetKClosestObjects(Vector2f pos, uint k, float range = float.MaxValue)
+        public T[] GetKClosestObjects(Vector2f pos, uint k, float range = float.MaxValue)
         {
 #if DEBUG
             if (range < 0f)
@@ -173,7 +173,7 @@ namespace SFQuadTree
         /// Gets all objects within the given range of the given position.
         /// This version of the queery is not thread safe.
         /// </summary>
-        public Transformable[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
+        public T[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
 #if DEBUG
             if (range < 0f)
@@ -189,7 +189,7 @@ namespace SFQuadTree
         /// Gets all objects within the given FloatRect.
         /// This version of the queery is not thread safe.
         /// </summary>
-        public Transformable[] GetObjectsInRect(FloatRect rect)
+        public T[] GetObjectsInRect(FloatRect rect)
         {
             CachedList.Clear();
             ObjectsInRectSearch(rect, CachedList);
@@ -206,7 +206,7 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public Transformable GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
+        public T GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
             return NearestNeighborSearch(pos, maxDistance * maxDistance);
         }
@@ -216,7 +216,7 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<Transformable> results)
+        public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<T> results)
         {
 #if DEBUG
             if (range < 0f)
@@ -233,7 +233,7 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetObjectsInRange(Vector2f pos, float range, IList<Transformable> results)
+        public void GetObjectsInRange(Vector2f pos, float range, IList<T> results)
         {
 #if DEBUG
             if (range < 0f)
@@ -249,7 +249,7 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetObjectsInRect(FloatRect rect, List<Transformable> results)
+        public void GetObjectsInRect(FloatRect rect, List<T> results)
         {
             ObjectsInRectSearch(rect, results);
         }
@@ -257,9 +257,9 @@ namespace SFQuadTree
         #endregion
 
         #region Internal Queeries
-        private Transformable NearestNeighborSearch(Vector2f pos, float distanceSquared)
+        private T NearestNeighborSearch(Vector2f pos, float distanceSquared)
         {
-            Transformable closest = null;
+            T closest = null;
 
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)
@@ -302,7 +302,7 @@ namespace SFQuadTree
             return closest;
         }
 
-        private void KNearestNeighborSearch(ref Vector2f pos, uint k, ref float rangeSquared, PriorityQueue<Transformable> results)
+        private void KNearestNeighborSearch(ref Vector2f pos, uint k, ref float rangeSquared, PriorityQueue<T> results)
         {
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)
@@ -354,7 +354,7 @@ namespace SFQuadTree
             }
         }
 
-        private void AllNearestNeighborsSearch(Vector2f pos, float rangeSquared, IList<Transformable> results)
+        private void AllNearestNeighborsSearch(Vector2f pos, float rangeSquared, IList<T> results)
         {
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)
@@ -391,7 +391,7 @@ namespace SFQuadTree
             }
         }
 
-        private void ObjectsInRectSearch(FloatRect rect, ICollection<Transformable> results)
+        private void ObjectsInRectSearch(FloatRect rect, ICollection<T> results)
         {
             if (m_ActiveNodes == 0)
             {
@@ -479,7 +479,7 @@ namespace SFQuadTree
             m_TreeBuilt = true;
         }
 
-        private void Insert(Transformable obj)
+        private void Insert(T obj)
         {
             if (obj == null)
                 return;
@@ -528,8 +528,8 @@ namespace SFQuadTree
             //Objects that go in each octant
             //Since these lists will be used by the octants
             //there is no reason to cache them
-            var octList = new List<Transformable>[4];
-            for (var i = 0; i < 4; i++) octList[i] = new List<Transformable>();
+            var octList = new List<T>[4];
+            for (var i = 0; i < 4; i++) octList[i] = new List<T>();
 
             CachedList.Clear();
             //list of objects moved into children
@@ -589,7 +589,7 @@ namespace SFQuadTree
             }
         }
 
-        private bool Delete(Transformable t)
+        private bool Delete(T t)
         {
             if (m_Objects.Count > 0 && m_Objects.Remove(t))
                 return true;
@@ -606,11 +606,11 @@ namespace SFQuadTree
             return false;
         }
 
-        private QuadTree CreateChildNode(FloatRect region, List<Transformable> objects)
+        private QuadTree<T> CreateChildNode(FloatRect region, List<T> objects)
         {
             return objects.Count == 0
                 ? null
-                : new QuadTree(region, objects, this);
+                : new QuadTree<T>(region, objects, this);
         }
         #endregion
 

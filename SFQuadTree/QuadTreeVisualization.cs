@@ -5,7 +5,8 @@ namespace SFQuadTree
 {
     public static class QuadTreeVisualization
     {
-        public static void DrawRegions(QuadTree tree, RenderTarget target, RenderStates states, Color color)
+        public static void DrawRegions<T>(QuadTree<T> tree, RenderTarget target, RenderStates states, Color color)
+            where T : Transformable
         {
             var regions = new List<FloatRect>();
             tree.GetAllRegions(regions);
