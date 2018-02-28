@@ -9,7 +9,10 @@ namespace SFQuadTree
     {
         public static Vector2f Normalized(this Vector2f v)
         {
-            return v / v.Length();
+            float l = v.Length();
+            if (l == 0f)
+                return new Vector2f(0,0);
+            return v / l;
         }
 
         public static float Length(this Vector2f v)
