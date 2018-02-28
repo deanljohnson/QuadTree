@@ -10,6 +10,7 @@ using SFQuadTree;
 namespace QuadTreeTest
 {
     // TODO: add tests for moving objects and proper tree updating
+    // TODO: test what happends when objects are set to null while in the tree
     [TestClass]
     public class QuadTreeTests
     {
