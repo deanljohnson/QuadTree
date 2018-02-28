@@ -133,7 +133,6 @@ namespace SFQuadTree
             }
 
             UpdateTree();
-            VerifyTree(this);
         }
 
         /// <summary>
@@ -619,24 +618,6 @@ namespace SFQuadTree
             foreach (var childNode in m_ChildNodes)
             {
                 childNode?.GetAllRegions(regions);
-            }
-        }
-
-        public static void VerifyTree(QuadTree<T> tree)
-        {
-            if (tree.m_Objects.Count > 0)
-                Debug.Assert(tree.m_ActiveNodes == 0);
-            foreach (var obj in tree.m_Objects)
-            {
-                Debug.Assert(tree.m_Region.Contains(obj.Position.X, obj.Position.Y));
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                if (tree.m_ChildNodes[i] != null)
-                {
-                    Debug.Assert((tree.m_ActiveNodes & (1 << i)) > 0);
-                    VerifyTree(tree.m_ChildNodes[i]);
-                }
             }
         }
     }
