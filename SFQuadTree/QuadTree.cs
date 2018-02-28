@@ -18,7 +18,6 @@ namespace SFQuadTree
 
         private readonly Queue<T> m_PendingInsertion;
         private readonly Queue<T> m_PendingRemoval;
-        private bool m_TreeBuilt;
 
         private FloatRect m_Region;
         private readonly QuadTree<T> m_Parent;
@@ -51,6 +50,8 @@ namespace SFQuadTree
                 m_PendingInsertion = new Queue<T>();
                 m_PendingRemoval = new Queue<T>();
             }
+
+            BuildTree();
         }
 
         public QuadTree(FloatRect region, List<T> objects)
@@ -448,17 +449,16 @@ namespace SFQuadTree
                     i--;
                 }
             }
-
-            if (!m_TreeBuilt)
-                BuildTree();
         }
 
-        // TODO: Cleanup
+        /// <summary>
+        /// Builds the initial state of a new QuadTree by attempting
+        /// to move children into sub-trees if needed and valid
+        /// </summary>
         private void BuildTree()
         {
             if (m_Objects.Count <= NUM_OBJECTS)
             {
-                m_TreeBuilt = true;
                 return; //We are a leaf node - we are done
             }
 
@@ -466,17 +466,13 @@ namespace SFQuadTree
 
             //Smallest we can get, no more subdividing
             //For a quadTree, all the bounds are squares, so we only 
-            //need to check one axis it seems
-            if (dimensions.X <= MIN_SIZE
-                /*&& dimensions.y <= MIN_SIZE*/)
+            //need to check one axis
+            if (dimensions.X <= MIN_SIZE)
             {
-                m_TreeBuilt = true;
                 return;
             }
 
             MoveObjectsToChildren();
-
-            m_TreeBuilt = true;
         }
 
         private void Insert(T obj)
@@ -577,7 +573,6 @@ namespace SFQuadTree
                 {
                     m_ChildNodes[i] = CreateChildNode(quads[i], octList[i]);
                     m_ActiveNodes |= (byte) (1 << i);
-                    m_ChildNodes[i].BuildTree();
                 }
                 else
                 {
