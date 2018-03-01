@@ -167,7 +167,7 @@ namespace SFQuadTree
 #endif
             CachedSortList.Clear();
             float r = range * range;
-            KNearestNeighborSearch(ref pos, k, ref r, CachedSortList);
+            KNearestNeighborSearch(pos, k, ref r, CachedSortList);
             return CachedSortList.ToArray();
         }
 
@@ -227,7 +227,7 @@ namespace SFQuadTree
                 throw new ArgumentException("Results queue cannot be null");
 #endif
             float r = range * range;
-            KNearestNeighborSearch(ref pos, k, ref r, results);
+            KNearestNeighborSearch(pos, k, ref r, results);
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace SFQuadTree
             return closest;
         }
 
-        private void KNearestNeighborSearch(ref Vector2f pos, uint k, ref float rangeSquared, PriorityQueue<T> results)
+        private void KNearestNeighborSearch(Vector2f pos, uint k, ref float rangeSquared, PriorityQueue<T> results)
         {
             //We have no children, check objects in this node
             if (m_ActiveNodes == 0)
@@ -348,7 +348,7 @@ namespace SFQuadTree
                 if (distToChildBorder > rangeSquared)
                     continue;
 
-                m_ChildNodes[i].KNearestNeighborSearch(ref pos, k, ref rangeSquared, results);
+                m_ChildNodes[i].KNearestNeighborSearch(pos, k, ref rangeSquared, results);
             }
         }
 
