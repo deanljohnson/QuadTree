@@ -32,31 +32,19 @@ namespace SFQuadTree
 
         public static float SquaredDistance(this FloatRect f, Vector2f v)
         {
-            //var min = f.Min();
             var max = f.Max();
 
-            var dx = Math.Max(f.Left - v.X, Math.Max(0f, v.X - max.X));
-            var dy = Math.Max(f.Top - v.Y, Math.Max(0f, v.Y - max.Y));
+            var dx1 = v.X - max.X;
+            if (dx1 < 0) dx1 = 0f;
+            var dx = f.Left - v.X;
+            if (dx1 > dx) dx = dx1;
 
-            /*var dx = (v.X > max.X)
-                ? max.X
-                : v.X < min.X
-                    ? min.X
-                    : v.X;
+            var dy1 = v.Y - max.Y;
+            if (dy1 < 0) dy1 = 0f;
+            var dy = f.Top - v.Y;
+            if (dy1 > dy) dy = dy1;
 
-            var dy = (v.Y > max.Y)
-                ? max.Y
-                : v.Y < min.Y
-                    ? min.Y
-                    : v.Y;
-
-            dx -= v.X;
-            dy -= v.Y;*/
-            
             return (dx * dx) + (dy * dy);
-            /*var dx = v.X - Math.Max(Math.Min(v.X, f.Left + f.Width), f.Left);
-            var dy = v.Y - Math.Max(Math.Min(v.Y, f.Top + f.Height), f.Top);
-            return (dx * dx) + (dy * dy);*/
         }
 
         public static Vector2f Max(this FloatRect f)
