@@ -507,14 +507,14 @@ namespace SFQuadTree
 
             var half = dimensions / 2f;
             var halflen = half.X;
-            var center = m_Region.Center();
+            //var center = m_Region.Center();
 
             //Create child bounds
             var quads = new FloatRect[4];
-            quads[0] = new FloatRect(center + new Vector2f(-halflen, -halflen), half);
-            quads[1] = new FloatRect(center + new Vector2f(0, -halflen), half);
-            quads[2] = new FloatRect(center, half);
-            quads[3] = new FloatRect(center + new Vector2f(-halflen, 0), half);
+            quads[0] = new FloatRect(m_Region.Left, m_Region.Top, halflen, halflen);
+            quads[1] = new FloatRect(m_Region.Left + halflen, m_Region.Top, halflen, halflen);
+            quads[2] = new FloatRect(m_Region.Left + halflen, m_Region.Top + halflen, halflen, halflen);
+            quads[3] = new FloatRect(m_Region.Left, m_Region.Top + halflen, halflen, halflen);
 
             //Objects that go in each octant
             //Since these lists will be used by the octants
