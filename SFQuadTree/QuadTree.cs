@@ -135,7 +135,8 @@ namespace SFQuadTree
             if (t == null)
                 throw new ArgumentException("Cannot add a null object to the QuadTree");
 #endif
-            m_PendingInsertion.Enqueue(t);
+            lock (m_PendingInsertion)
+                m_PendingInsertion.Enqueue(t);
         }
 
         /// <summary>
@@ -148,7 +149,8 @@ namespace SFQuadTree
             if (t == null)
                 throw new ArgumentException("Cannot remove a null object from the QuadTree");
 #endif
-            m_PendingRemoval.Enqueue(t);
+            lock (m_PendingRemoval)
+                m_PendingRemoval.Enqueue(t);
         }
 
 #region Non-Thread-Safe Queeries
@@ -418,17 +420,23 @@ namespace SFQuadTree
         {
             if (m_PendingInsertion != null)
             {
-                while (m_PendingInsertion.Count != 0)
+                lock (m_PendingInsertion)
                 {
-                    Insert(m_PendingInsertion.Dequeue());
+                    while (m_PendingInsertion.Count != 0)
+                    {
+                        Insert(m_PendingInsertion.Dequeue());
+                    }
                 }
             }
 
             if (m_PendingRemoval != null)
             {
-                while (m_PendingRemoval.Count != 0)
+                lock (m_PendingRemoval)
                 {
-                    Delete(m_PendingRemoval.Dequeue());
+                    while (m_PendingRemoval.Count != 0)
+                    {
+                        Delete(m_PendingRemoval.Dequeue());
+                    }
                 }
             }
 
