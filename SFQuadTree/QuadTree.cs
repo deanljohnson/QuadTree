@@ -94,8 +94,8 @@ namespace SFQuadTree
                 //CachedHashSet contains items that we already re-inserted
                 //This can occur if an object moves out of the roots region
                 //TODO: Implement hasChanged for SFML Transformable
-                if (/*!m_Objects[i].hasChanged || */false)
-                    continue;
+                /*if (!m_Objects[i].hasChanged)
+                    continue;*/
 
                 var obj = m_Objects[i];
 
@@ -530,9 +530,8 @@ namespace SFQuadTree
             var octList = new List<T>[4];
             for (var i = 0; i < 4; i++) octList[i] = new List<T>();
 
-            CachedList.Clear();
             //list of objects moved into children
-            var delist = CachedList;
+            var delist = new List<int>();
 
             //Move objects into children
             for (var index = 0; index < m_Objects.Count; index++)
@@ -553,16 +552,16 @@ namespace SFQuadTree
                     if (quads[i].Contains(obj.Position.X, obj.Position.Y))
                     {
                         octList[i].Add(obj);
-                        delist.Add(obj);
+                        delist.Add(index);
                         break;
                     }
                 }
             }
 
             //Delist objects that were moved into the children
-            for (var i = 0; i < delist.Count; i++)
+            for (var i = delist.Count - 1; i >= 0; i--)
             {
-                m_Objects.Remove(delist[i]);
+                m_Objects.RemoveAt(delist[i]);
             }
 
             for (var i = 0; i < 4; i++)
