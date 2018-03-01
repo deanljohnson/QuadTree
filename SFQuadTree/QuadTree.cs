@@ -496,6 +496,31 @@ namespace SFQuadTree
             }
         }
 
+        private void Insert(List<T> objs)
+        {
+            bool overflow = false;
+            for (var i = 0; i < objs.Count; i++)
+            {
+                if (m_Objects.Count < NUM_OBJECTS && m_ActiveNodes == 0)
+                {
+                    m_Objects.Add(objs[i]);
+                }
+                else
+                {
+                    overflow = true;
+                    m_Objects.Add(objs[i]);
+                }
+            }
+
+            //Smallest we can get, no more subdividing
+            //For an quadtree, all the bounds are squares, so we only 
+            //need to check one axis
+            if (overflow && m_Region.Width > MIN_SIZE)
+            {
+                MoveObjectsToChildren();
+            }
+        }
+
         /// <summary>
         /// Attempts to move all objects at this level of the QuadTree into child nodes
         /// </summary>
@@ -564,10 +589,7 @@ namespace SFQuadTree
                 }
                 else
                 {
-                    for (int j = 0; j < octList[i].Count; j++)
-                    {
-                        m_ChildNodes[i].Insert(octList[i][j]);
-                    }
+                    m_ChildNodes[i].Insert(octList[i]);
                 }
             }
         }
