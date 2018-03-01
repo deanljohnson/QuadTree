@@ -131,9 +131,10 @@ namespace SFQuadTree
         /// </summary>
         public void Add(T t)
         {
+#if DEBUG
             if (t == null)
-                return;
-
+                throw new ArgumentException("Cannot add a null object to the QuadTree");
+#endif
             m_PendingInsertion.Enqueue(t);
         }
 
@@ -143,13 +144,14 @@ namespace SFQuadTree
         /// </summary>
         public void Remove(T t)
         {
+#if DEBUG
             if (t == null)
-                return;
-
+                throw new ArgumentException("Cannot remove a null object from the QuadTree");
+#endif
             m_PendingRemoval.Enqueue(t);
         }
 
-        #region Non-Thread-Safe Queeries
+#region Non-Thread-Safe Queeries
 
         /// <summary>
         /// Gets the K closest objects to a given position.
@@ -195,9 +197,9 @@ namespace SFQuadTree
             return CachedList.ToArray();
         }
 
-        #endregion
+#endregion
 
-        #region Thread-Safe Queeries
+#region Thread-Safe Queeries
 
         /// <summary>
         /// Gets the closest object to the given position.
@@ -252,9 +254,9 @@ namespace SFQuadTree
             ObjectsInRectSearch(rect, results);
         }
 
-        #endregion
+#endregion
 
-        #region Internal Queeries
+#region Internal Queeries
         private T NearestNeighborSearch(Vector2f pos, float distanceSquared)
         {
             T closest = null;
@@ -409,9 +411,9 @@ namespace SFQuadTree
             }
         }
 
-        #endregion
+#endregion
 
-        #region Internal Operations
+#region Internal Operations
         private void UpdateTree()
         {
             if (m_PendingInsertion != null)
