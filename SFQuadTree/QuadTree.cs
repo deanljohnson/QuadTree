@@ -487,12 +487,10 @@ namespace SFQuadTree
 
             m_Objects.Add(obj);
 
-            var dimensions = m_Region.Dimensions();
-
             //Smallest we can get, no more subdividing
             //For an quadtree, all the bounds are squares, so we only 
             //need to check one axis
-            if (dimensions.X > MIN_SIZE)
+            if (m_Region.Width > MIN_SIZE)
             {
                 MoveObjectsToChildren();
             }
@@ -503,11 +501,7 @@ namespace SFQuadTree
         /// </summary>
         private void MoveObjectsToChildren()
         {
-            var dimensions = m_Region.Dimensions();
-
-            var half = dimensions / 2f;
-            var halflen = half.X;
-            //var center = m_Region.Center();
+            var halflen = m_Region.Width / 2f;
 
             //Create child bounds
             var quads = new FloatRect[4];
