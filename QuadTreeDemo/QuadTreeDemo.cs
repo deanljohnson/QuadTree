@@ -159,17 +159,25 @@ namespace QuadTreeDemo
             }, 10000);*/
             //Console.WriteLine("End Quad Tree test, checked: " + QuadTree.CheckCount);
             //Console.WriteLine("ExtraOp Count: " + QuadTree.ExtraOpCount);
-            var simpleCount = 0;
             Clock.BenchmarkTime(() =>
             {
+                for (int i = 0; i < 10; i++)
+                {
+                    foreach (var testObject in m_TestObjects)
+                    {
+                        testObject.Key.Position = GetRandomPos();
+                    }
+                    m_Tree.Update();
+                }
+            }, 100);
+            /*Clock.BenchmarkTime(() =>
+            {
                 m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
-                m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
-                m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
-                m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
-                m_Tree.GetKClosestObjects(GetRandomPos(), (uint) Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true));
-            }, 10000);
+                m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>());
+                m_Tree.GetObjectsInRect(new FloatRect(GetRandomPos(), GetRandomPos()), new List<Transformable>());
+            }, 10000);*/
 
-            Console.WriteLine("End Simple Test, checked: " + simpleCount);
+            Console.WriteLine("End Simple Test");
         }
 
         /// <summary>
