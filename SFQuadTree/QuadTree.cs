@@ -67,16 +67,6 @@ namespace SFQuadTree
 
         public void Update()
         {
-            //Remove null references
-            for (var i = 0; i < m_Objects.Count; i++)
-            {
-                if (m_Objects[i] == null)
-                {
-                    m_Objects.RemoveAt(i);
-                    i--;
-                }
-            }
-
             //Update active branches
             for (var i = 0; i < 4; i++)
             {
@@ -275,8 +265,6 @@ namespace SFQuadTree
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
                     var obj = m_Objects[i];
-                    if (obj == null)
-                        continue;
 
                     var ds = (pos - obj.Position).SquaredLength();
 
@@ -318,8 +306,6 @@ namespace SFQuadTree
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
                     var obj = m_Objects[i];
-                    if (obj == null)
-                        continue;
 
                     var ds = (pos - obj.Position).SquaredLength();
 
@@ -370,8 +356,6 @@ namespace SFQuadTree
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
                     var obj = m_Objects[i];
-                    if (obj == null)
-                        continue;
 
                     var ds = (pos - obj.Position).SquaredLength();
 
@@ -406,8 +390,6 @@ namespace SFQuadTree
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
                     var obj = m_Objects[i];
-                    if (obj == null)
-                        continue;
 
                     if (!rect.Contains(obj.Position.X, obj.Position.Y))
                         return;
