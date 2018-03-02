@@ -58,7 +58,6 @@ namespace QuadTreeTest
             TestObject one = new TestObject();
             TestObject two = new TestObject();
 
-            tree.Add(null);
             Assert.AreEqual(tree.Count, 0);
             tree.Update();
             Assert.AreEqual(tree.Count, 0);
@@ -72,7 +71,6 @@ namespace QuadTreeTest
             tree.Update();
             Assert.AreEqual(tree.Count, 2);
 
-            tree.Remove(null);
             Assert.AreEqual(tree.Count, 2);
             tree.Update();
             Assert.AreEqual(tree.Count, 2);
