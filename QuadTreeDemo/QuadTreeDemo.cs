@@ -36,7 +36,7 @@ namespace QuadTreeDemo
 
         private float m_QueeryRange = 300f;
 
-        private TestType TestType = TestType.Console;
+        private TestType TestType = TestType.Graphical;
 
         public QuadTreeDemo()
         {
