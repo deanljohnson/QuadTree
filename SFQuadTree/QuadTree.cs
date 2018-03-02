@@ -9,7 +9,8 @@ using SFML.System;
 
 namespace SFQuadTree
 {
-    public class QuadTree<T> where T : Transformable
+    public class QuadTree<T> : ISpacePartitioner<T> 
+        where T : Transformable
     {
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
         // Note that these are not used in function chains claiming to be thread safe
@@ -252,7 +253,7 @@ namespace SFQuadTree
         /// This version of the queery is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetObjectsInRect(FloatRect rect, List<T> results)
+        public void GetObjectsInRect(FloatRect rect, IList<T> results)
         {
             ObjectsInRectSearch(rect, results);
         }

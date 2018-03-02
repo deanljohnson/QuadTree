@@ -74,6 +74,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ISpacePartitioner.cs" />
     <Compile Include="MaxPriorityQueue.cs" />
     <Compile Include="QuadTree.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
