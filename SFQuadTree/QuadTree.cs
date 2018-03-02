@@ -481,13 +481,12 @@ namespace SFQuadTree
             if (obj == null)
                 return;
 
+            m_Objects.Add(obj);
+
             if (m_Objects.Count < NUM_OBJECTS && m_ActiveNodes == 0)
             {
-                m_Objects.Add(obj);
                 return;
             }
-
-            m_Objects.Add(obj);
 
             //Smallest we can get, no more subdividing
             //For an quadtree, all the bounds are squares, so we only 
