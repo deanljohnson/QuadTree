@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using PriorityQueue;
+using QuadTree;
 using SFML.Graphics;
 using SFML.System;
 
@@ -12,7 +13,7 @@ namespace SFQuadTree
     {
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
         // Note that these are not used in function chains claiming to be thread safe
-        private static readonly PriorityQueue<T> CachedSortList = new PriorityQueue<T>(true);
+        private static readonly PriorityQueue<T> CachedSortList = new MaxPriorityQueue<T>();
         private static readonly List<T> CachedList = new List<T>();
 
         private readonly Queue<T> m_PendingInsertion;
