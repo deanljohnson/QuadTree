@@ -497,16 +497,9 @@ namespace SFQuadTree
 
         private void Insert(List<T> objs)
         {
-            bool overflow = false;
-            for (var i = 0; i < objs.Count; i++)
-            {
-                m_Objects.Add(objs[i]);
+            m_Objects.AddRange(objs);
 
-                if (m_Objects.Count >= NUM_OBJECTS || m_ActiveNodes != 0)
-                {
-                    overflow = true;
-                }
-            }
+            bool overflow = m_Objects.Count > NUM_OBJECTS || m_ActiveNodes != 0;
 
             //Smallest we can get, no more subdividing
             //For an quadtree, all the bounds are squares, so we only 
