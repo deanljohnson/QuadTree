@@ -28,7 +28,7 @@ namespace SFQuadTree
         private byte m_ActiveNodes; //Used a a bitmask to track active nodes
         private const int MIN_SIZE = 5;
         private const int NUM_OBJECTS = 1;
-    
+
         public int Count
         {
             get { return m_Objects.Count + m_ChildNodes.Where(c => c != null).Sum(c => c.Count); }
@@ -502,14 +502,11 @@ namespace SFQuadTree
             bool overflow = false;
             for (var i = 0; i < objs.Count; i++)
             {
-                if (m_Objects.Count < NUM_OBJECTS && m_ActiveNodes == 0)
-                {
-                    m_Objects.Add(objs[i]);
-                }
-                else
+                m_Objects.Add(objs[i]);
+
+                if (m_Objects.Count >= NUM_OBJECTS || m_ActiveNodes != 0)
                 {
                     overflow = true;
-                    m_Objects.Add(objs[i]);
                 }
             }
 
@@ -597,6 +594,9 @@ namespace SFQuadTree
 
         private bool Delete(T t)
         {
+            if (!m_Region.Contains(t.Position.X, t.Position.Y))
+                return false;
+
             if (m_Objects.Count > 0 && m_Objects.Remove(t))
                 return true;
 
