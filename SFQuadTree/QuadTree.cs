@@ -21,7 +21,6 @@ namespace SFQuadTree
         private readonly Queue<T> m_PendingRemoval;
 
         private FloatRect m_Region;
-        private readonly QuadTree<T> m_Parent;
         private readonly List<T> m_Objects;
         private readonly QuadTree<T>[] m_ChildNodes = new QuadTree<T>[4];
 
@@ -45,7 +44,6 @@ namespace SFQuadTree
 
             m_Region = region;
             m_Objects = objects;
-            m_Parent = parent;
 
             //If we are a child, we wont need these allocations
             if (parent == null)
@@ -69,62 +67,7 @@ namespace SFQuadTree
 
         public void Update()
         {
-            //Update active branches
-            for (var i = 0; i < 4; i++)
-            {
-                if ((m_ActiveNodes & (1 << i)) != 0)
-                {
-                    m_ChildNodes[i].Update();
-                }
-            }
-
-            //Move children up to parent if they have moved out of our bounds
-            //var movedObjects = m_Objects.ToArray();
-            for (var i = 0; i < m_Objects.Count; i++)
-            {
-                //If an object hasn't moved, then it is still in the correct octree
-                //CachedHashSet contains items that we already re-inserted
-                //This can occur if an object moves out of the roots region
-                //TODO: Implement hasChanged for SFML Transformable
-                /*if (!m_Objects[i].hasChanged)
-                    continue;*/
-
-                var obj = m_Objects[i];
-
-                if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
-                {
-                    // Object is outside root's region
-                    // Shouldn't break anything, but objects
-                    // won't show up in any queeries
-                    if (m_Parent == null)
-                        continue;
-
-                    var current = m_Parent;
-
-                    // Find parent that can hold this object
-                    while (!current.m_Region.Contains(obj.Position.X, obj.Position.Y))
-                    {
-                        if (current.m_Parent != null) current = current.m_Parent;
-                        else break; // Either the root has to take it, or it is not within the roots region either
-                    }
-
-                    m_Objects.RemoveAt(i--);
-                    current.Insert(obj);
-                }
-            }
-
-            //prune out any dead branches in the tree
-            for (var i = 0; i < 4; i++)
-            {
-                if ((m_ActiveNodes & (1 << i)) != 0 && m_ChildNodes[i].m_Objects.Count == 0 &&
-                    m_ChildNodes[i].m_ActiveNodes == 0)
-                {
-                    m_ChildNodes[i] = null;
-                    m_ActiveNodes ^= (byte)(1 << i);
-                }
-            }
-
-            UpdateTree();
+            Insert(InternalUpdate());
         }
 
         /// <summary>
@@ -415,9 +358,64 @@ namespace SFQuadTree
             }
         }
 
-#endregion
+        #endregion
 
-#region Internal Operations
+        #region Internal Operations
+        private List<T> InternalUpdate()
+        {
+            var objsInserting = new List<T>();
+            var objsMovingUp = new List<T>();
+
+            //Update active branches
+            for (var i = 0; i < 4; i++)
+            {
+                if ((m_ActiveNodes & (1 << i)) == 0)
+                    continue;
+
+                var movedUp = m_ChildNodes[i].InternalUpdate();
+                for (var j = 0; j < movedUp.Count; j++)
+                {
+                    if (m_Region.Contains(movedUp[j].Position.X, movedUp[j].Position.Y))
+                    {
+                        objsInserting.Add(movedUp[j]);
+                    }
+                    else
+                    {
+                        objsMovingUp.Add(movedUp[j]);
+                    }
+                }
+            }
+
+            //Move children up to parent if they have moved out of our bounds
+            for (var i = m_Objects.Count - 1; i >= 0; i--)
+            {
+                var obj = m_Objects[i];
+
+                if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
+                {
+                    objsMovingUp.Add(obj);
+                    m_Objects.RemoveAt(i);
+                }
+            }
+
+            Insert(objsInserting);
+
+            UpdateTree();
+
+            //prune out any dead branches in the tree
+            for (var i = 0; i < 4; i++)
+            {
+                if ((m_ActiveNodes & (1 << i)) != 0 && m_ChildNodes[i].m_Objects.Count == 0 &&
+                    m_ChildNodes[i].m_ActiveNodes == 0)
+                {
+                    m_ChildNodes[i] = null;
+                    m_ActiveNodes ^= (byte)(1 << i);
+                }
+            }
+
+            return objsMovingUp;
+        }
+
         private void UpdateTree()
         {
             if (m_PendingInsertion != null)
