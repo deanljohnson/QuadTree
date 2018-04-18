@@ -9,7 +9,7 @@ using SFML.System;
 
 namespace SFQuadTree
 {
-    public class QuadTree<T> : ISpacePartitioner<T> 
+    public class QuadTree<T> : ISpacePartitioner<T>
         where T : Transformable
     {
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
@@ -24,7 +24,7 @@ namespace SFQuadTree
         private readonly List<T> m_Objects;
         private readonly QuadTree<T>[] m_ChildNodes = new QuadTree<T>[4];
 
-        private byte m_ActiveNodes; //Used a a bitmask to track active nodes
+        private bool m_Leaf = true;
         private const int MIN_SIZE = 5;
         private const int NUM_OBJECTS = 1;
 
@@ -56,7 +56,7 @@ namespace SFQuadTree
         }
 
         public QuadTree(FloatRect region, List<T> objects)
-            : this (region, objects, null)
+            : this(region, objects, null)
         {
         }
 
@@ -98,7 +98,7 @@ namespace SFQuadTree
                 m_PendingRemoval.Enqueue(t);
         }
 
-#region Non-Thread-Safe Queeries
+        #region Non-Thread-Safe Queeries
 
         /// <summary>
         /// Gets the K closest objects to a given position.
@@ -144,9 +144,9 @@ namespace SFQuadTree
             return CachedList.ToArray();
         }
 
-#endregion
+        #endregion
 
-#region Thread-Safe Queeries
+        #region Thread-Safe Queeries
 
         /// <summary>
         /// Gets the closest object to the given position.
@@ -201,15 +201,15 @@ namespace SFQuadTree
             ObjectsInRectSearch(rect, results);
         }
 
-#endregion
+        #endregion
 
-#region Internal Queeries
+        #region Internal Queeries
         private T NearestNeighborSearch(Vector2f pos, float distanceSquared)
         {
             T closest = null;
 
             //We have no children, check objects in this node
-            if (m_ActiveNodes == 0)
+            if (m_Leaf)
             {
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
@@ -228,7 +228,7 @@ namespace SFQuadTree
 
             for (var i = 0; i < 4; i++)
             {
-                if ((m_ActiveNodes & (1 << i)) == 0)
+                if (m_ChildNodes[i] == null)
                     continue;
 
                 //If a border is closer than the closest distance so far, it might have a closer object
@@ -250,7 +250,7 @@ namespace SFQuadTree
         private void KNearestNeighborSearch(Vector2f pos, uint k, ref float rangeSquared, PriorityQueue<T> results)
         {
             //We have no children, check objects in this node
-            if (m_ActiveNodes == 0)
+            if (m_Leaf)
             {
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
@@ -272,7 +272,7 @@ namespace SFQuadTree
                     {
                         results.Dequeue();
                         results.Enqueue(obj, ds);
-                        rangeSquared = (float) results.GetPriority(results.Peek());
+                        rangeSquared = (float)results.GetPriority(results.Peek());
                     }
                 }
                 return;
@@ -281,11 +281,8 @@ namespace SFQuadTree
             //Check if we should check children
             for (var i = 0; i < 4; i++)
             {
-                if ((m_ActiveNodes & (1 << i)) == 0 ||
-                    (m_ChildNodes[i].m_Objects.Count == 0 && m_ChildNodes[i].m_ActiveNodes == 0))
-                {
+                if (m_ChildNodes[i] == null)
                     continue;
-                }
 
                 //If a border is closer than the farthest distance so far, it might have a closer object
                 var distToChildBorder = m_ChildNodes[i].m_Region.SquaredDistance(pos);
@@ -300,7 +297,7 @@ namespace SFQuadTree
         private void AllNearestNeighborsSearch(Vector2f pos, float rangeSquared, IList<T> results)
         {
             //We have no children, check objects in this node
-            if (m_ActiveNodes == 0)
+            if (m_Leaf)
             {
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
@@ -319,7 +316,7 @@ namespace SFQuadTree
             //Check if we should check children
             for (var i = 0; i < 4; i++)
             {
-                if ((m_ActiveNodes & (1 << i)) == 0)
+                if (m_ChildNodes[i] == null)
                     continue;
 
                 //If a border is closer than the farthest distance so far, it might have a closer object
@@ -334,7 +331,7 @@ namespace SFQuadTree
 
         private void ObjectsInRectSearch(FloatRect rect, ICollection<T> results)
         {
-            if (m_ActiveNodes == 0)
+            if (m_Leaf)
             {
                 for (var i = 0; i < m_Objects.Count; i++)
                 {
@@ -350,7 +347,7 @@ namespace SFQuadTree
             //Check if we should check children
             for (var i = 0; i < 4; i++)
             {
-                if ((m_ActiveNodes & (1 << i)) == 0)
+                if (m_ChildNodes[i] == null)
                     continue;
 
                 if (m_ChildNodes[i].m_Region.Intersects(rect))
@@ -369,7 +366,7 @@ namespace SFQuadTree
             //Update active branches
             for (var i = 0; i < 4; i++)
             {
-                if ((m_ActiveNodes & (1 << i)) == 0)
+                if (m_ChildNodes[i] == null)
                     continue;
 
                 var movedUp = m_ChildNodes[i].InternalUpdate();
@@ -402,15 +399,17 @@ namespace SFQuadTree
 
             UpdateTree();
 
+            m_Leaf = true;
             //prune out any dead branches in the tree
             for (var i = 0; i < 4; i++)
             {
-                if ((m_ActiveNodes & (1 << i)) != 0 && m_ChildNodes[i].m_Objects.Count == 0 &&
-                    m_ChildNodes[i].m_ActiveNodes == 0)
+                if (m_ChildNodes[i] != null 
+                    && m_ChildNodes[i].m_Objects.Count == 0 
+                    && m_ChildNodes[i].m_Leaf)
                 {
                     m_ChildNodes[i] = null;
-                    m_ActiveNodes ^= (byte)(1 << i);
                 }
+                m_Leaf &= m_ChildNodes[i] == null;
             }
 
             return objsMovingUp;
@@ -481,7 +480,7 @@ namespace SFQuadTree
 
             m_Objects.Add(obj);
 
-            if (m_Objects.Count < NUM_OBJECTS && m_ActiveNodes == 0)
+            if (m_Objects.Count < NUM_OBJECTS && m_Leaf)
             {
                 return;
             }
@@ -499,7 +498,7 @@ namespace SFQuadTree
         {
             m_Objects.AddRange(objs);
 
-            bool overflow = m_Objects.Count > NUM_OBJECTS || m_ActiveNodes != 0;
+            bool overflow = m_Objects.Count > NUM_OBJECTS || !m_Leaf;
 
             //Smallest we can get, no more subdividing
             //For an quadtree, all the bounds are squares, so we only 
@@ -530,39 +529,31 @@ namespace SFQuadTree
             var octList = new List<T>[4];
             for (var i = 0; i < 4; i++) octList[i] = new List<T>();
 
-            //list of objects moved into children
-            var delist = new List<int>();
-
             //Move objects into children
             for (var index = 0; index < m_Objects.Count; index++)
             {
                 var obj = m_Objects[index];
 
                 if (obj == null)
-                {
-                    //Get rid of the null object
-                    m_Objects.RemoveAt(index);
-                    index--;
                     continue;
-                }
 
+                bool moved = false;
                 for (var i = 0; i < 4; i++)
                 {
                     //TODO: Expand this to deal with objects with bounds, not just points
                     if (quads[i].Contains(obj.Position.X, obj.Position.Y))
                     {
                         octList[i].Add(obj);
-                        delist.Add(index);
+                        moved = true;
                         break;
                     }
                 }
+
+                if (!moved)
+                    throw new Exception("Unable to move an object into a child region");
             }
 
-            //Delist objects that were moved into the children
-            for (var i = delist.Count - 1; i >= 0; i--)
-            {
-                m_Objects.RemoveAt(delist[i]);
-            }
+            m_Objects.Clear();
 
             for (var i = 0; i < 4; i++)
             {
@@ -571,10 +562,10 @@ namespace SFQuadTree
                     continue;
 
                 // If the child node does not exist
-                if ((m_ActiveNodes & (1 << i)) == 0)
+                if (m_ChildNodes[i] == null)
                 {
+                    m_Leaf = false;
                     m_ChildNodes[i] = CreateChildNode(quads[i], octList[i]);
-                    m_ActiveNodes |= (byte) (1 << i);
                 }
                 else
                 {
@@ -591,10 +582,10 @@ namespace SFQuadTree
             if (m_Objects.Count > 0 && m_Objects.Remove(t))
                 return true;
 
-            //For each active node, try to delete from that node
-            for (int flags = m_ActiveNodes, index = 0; flags > 0; flags >>= 1, index++)
+            for (int i = 0; i < m_ChildNodes.Length; i++)
             {
-                if ((flags & 1) == 1 && m_ChildNodes[index].Delete(t))
+                if (m_ChildNodes[i] != null 
+                    && m_ChildNodes[i].Delete(t))
                 {
                     return true;
                 }
@@ -609,7 +600,7 @@ namespace SFQuadTree
                 ? null
                 : new QuadTree<T>(region, objects, this);
         }
-#endregion
+        #endregion
 
         public void GetAllRegions(List<FloatRect> regions)
         {
