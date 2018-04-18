@@ -25,8 +25,19 @@ namespace SFQuadTree
         private readonly QuadTree<T>[] m_ChildNodes = new QuadTree<T>[4];
 
         private bool m_Leaf = true;
-        private const int MIN_SIZE = 5;
-        private const int NUM_OBJECTS = 1;
+
+        /// <summary>
+        /// The minimum size of a leaf QuadTree.
+        /// <see cref="NumObjects"/> will not be 
+        /// respected for leafs of this size.
+        /// </summary>
+        public static int MinSize = 5;
+        /// <summary>
+        /// The maximum number of objects to add to a 
+        /// leaf node before splitting. Will be ignored 
+        /// for nodes of size <see cref="MinSize"/>.
+        /// </summary>
+        public static int NumObjects = 1;
 
         public int Count
         {
@@ -455,7 +466,7 @@ namespace SFQuadTree
         /// </summary>
         private void BuildTree()
         {
-            if (m_Objects.Count <= NUM_OBJECTS)
+            if (m_Objects.Count <= NumObjects)
             {
                 return; //We are a leaf node - we are done
             }
@@ -465,7 +476,7 @@ namespace SFQuadTree
             //Smallest we can get, no more subdividing
             //For a quadTree, all the bounds are squares, so we only 
             //need to check one axis
-            if (dimensions.X <= MIN_SIZE)
+            if (dimensions.X <= MinSize)
             {
                 return;
             }
@@ -480,7 +491,7 @@ namespace SFQuadTree
 
             m_Objects.Add(obj);
 
-            if (m_Objects.Count < NUM_OBJECTS && m_Leaf)
+            if (m_Objects.Count < NumObjects && m_Leaf)
             {
                 return;
             }
@@ -488,7 +499,7 @@ namespace SFQuadTree
             //Smallest we can get, no more subdividing
             //For an quadtree, all the bounds are squares, so we only 
             //need to check one axis
-            if (m_Region.Width > MIN_SIZE)
+            if (m_Region.Width > MinSize)
             {
                 MoveObjectsToChildren();
             }
@@ -498,12 +509,12 @@ namespace SFQuadTree
         {
             m_Objects.AddRange(objs);
 
-            bool overflow = m_Objects.Count > NUM_OBJECTS || !m_Leaf;
+            bool overflow = m_Objects.Count > NumObjects || !m_Leaf;
 
             //Smallest we can get, no more subdividing
             //For an quadtree, all the bounds are squares, so we only 
             //need to check one axis
-            if (overflow && m_Region.Width > MIN_SIZE)
+            if (overflow && m_Region.Width > MinSize)
             {
                 MoveObjectsToChildren();
             }
