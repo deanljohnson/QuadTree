@@ -44,10 +44,10 @@ namespace QuadTreeTest
                 new List<TestObject> {new TestObject(), new TestObject()});
             Assert.AreEqual(tree2.Count, 2);
 
-            Assert.ThrowsException<NullReferenceException>(() => new QuadTree<TestObject>(m_Bounds, null));
+            AssertThrows<NullReferenceException>(() => new QuadTree<TestObject>(m_Bounds, null));
 
             FloatRect nonSquareBounds = new FloatRect(0,0,5,10);
-            Assert.ThrowsException<ArgumentException>(() => new QuadTree<TestObject>(nonSquareBounds));
+            AssertThrows<ArgumentException>(() => new QuadTree<TestObject>(nonSquareBounds));
         }
 
         [TestMethod]
@@ -129,7 +129,7 @@ namespace QuadTreeTest
             Assert.IsTrue(HaveSameElements(results, new[] { objs[3] }));
 
 #if DEBUG
-            Assert.ThrowsException<ArgumentException>(
+            AssertThrows<ArgumentException>(
                 () => tree.GetKClosestObjects(new Vector2f(51, 51), 3, -10f));
 #endif
 
@@ -151,9 +151,9 @@ namespace QuadTreeTest
 
 #if DEBUG
             resultsQueue.Clear();
-            Assert.ThrowsException<ArgumentException>(
+            AssertThrows<ArgumentException>(
                 () => tree.GetKClosestObjects(new Vector2f(51, 51), 3, -10f, resultsQueue));
-            Assert.ThrowsException<ArgumentException>(
+            AssertThrows<ArgumentException>(
                 () => tree.GetKClosestObjects(new Vector2f(51, 51), 3, 10f, null));
 #endif
         }
@@ -190,7 +190,7 @@ namespace QuadTreeTest
             Assert.IsTrue(HaveSameElements(results, new[] { objs[0], objs[1], objs[2], objs[3] }));
 
 #if DEBUG
-            Assert.ThrowsException<ArgumentException>(
+            AssertThrows<ArgumentException>(
                 () => tree.GetObjectsInRange(new Vector2f(0, 0), -5f));
 #endif
 
@@ -211,9 +211,9 @@ namespace QuadTreeTest
             Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0], objs[1], objs[2], objs[3] }));
 
 #if DEBUG
-            Assert.ThrowsException<ArgumentException>(
+            AssertThrows<ArgumentException>(
                 () => tree.GetObjectsInRange(new Vector2f(0, 0), -5f, resultsList));
-            Assert.ThrowsException<ArgumentException>(
+            AssertThrows<ArgumentException>(
                 () => tree.GetObjectsInRange(new Vector2f(0, 0), 5f, null));
 #endif
         }
@@ -307,6 +307,24 @@ namespace QuadTreeTest
             }
 
             return true;
+        }
+
+        internal static void AssertThrows<TException>(Action method)
+            where TException : Exception
+        {
+            try
+            {
+                method.Invoke();
+            }
+            catch (TException)
+            {
+                return; // Expected exception.
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail("Wrong exception thrown: " + ex.Message);
+            }
+            Assert.Fail("No exception thrown");
         }
     }
 }
