@@ -59,9 +59,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SFQuadTree\SFQuadTree.csproj">
+    <ProjectReference Include="..\QuadTree\QuadTree.csproj">
       <Project>{E7B063F4-0385-4643-ADCC-FB6471803644}</Project>
-      <Name>SFQuadTree</Name>
+      <Name>QuadTree</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

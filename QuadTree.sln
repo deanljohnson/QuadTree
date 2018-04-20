@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFQuadTree", "SFQuadTree\SFQuadTree.csproj", "{E7B063F4-0385-4643-ADCC-FB6471803644}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuadTree", "QuadTree\QuadTree.csproj", "{E7B063F4-0385-4643-ADCC-FB6471803644}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuadTreeDemo", "QuadTreeDemo\QuadTreeDemo.csproj", "{68EF5C55-3BF8-4BFC-8A76-EE148A09B9D0}"
 EndProject

@@ -165,38 +165,41 @@ namespace SFQuadTree
             var bucketRangeY = (int) (range / m_BucketHeight) + 1;
             if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
 
-            for (int i = -bucketRangeX + 1; i < bucketRangeX; i++)
+            for (int i = 0; i <= bucketRangeX; i++)
             {
-                for (int j = -bucketRangeY + 1; j < bucketRangeY; j++)
+                for (int j = 0; j <= bucketRangeY; j++)
                 {
-                    var nextIdx = idx + (i + (j * m_NumBucketsWidth));
-                    // If index is out of range
-                    if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
-                        continue;
-
-                    if (m_Buckets[nextIdx] == null)
-                        continue;
-
-                    var bucket = m_Buckets[nextIdx];
-                    for (int k = 0; k < bucket.Count; k++)
+                    for (int m = -1; m < 2; m += 2)
                     {
-                        var ds = (bucket[k].Position - pos).SquaredLength();
-                        if (ds < range * range)
+                        var nextIdx = idx + (m * (i + (j * m_NumBucketsWidth)));
+                        // If index is out of range
+                        if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
+                            continue;
+
+                        if (m_Buckets[nextIdx] == null)
+                            continue;
+
+                        var bucket = m_Buckets[nextIdx];
+                        for (int k = 0; k < bucket.Count; k++)
                         {
-                            closest = bucket[k];
-                            range = (float)Math.Sqrt(ds);
+                            var ds = (bucket[k].Position - pos).SquaredLength();
+                            if (ds < range * range)
+                            {
+                                closest = bucket[k];
+                                range = (float)Math.Sqrt(ds);
+                            }
                         }
+
+                        bucketRangeX = (int)(range / m_BucketWidth) + 1;
+                        if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
+                        bucketRangeY = (int)(range / m_BucketHeight) + 1;
+                        if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
+
+                        if (i < -bucketRangeX) i = -bucketRangeX;
+                        if (i > bucketRangeX) i = bucketRangeX;
+                        if (j < -bucketRangeY) j = -bucketRangeY;
+                        if (j > bucketRangeY) j = bucketRangeY;
                     }
-
-                    bucketRangeX = (int)(range / m_BucketWidth) + 1;
-                    if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
-                    bucketRangeY = (int)(range / m_BucketHeight) + 1;
-                    if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
-
-                    if (i < -bucketRangeX) i = -bucketRangeX;
-                    if (i > bucketRangeX) i = bucketRangeX;
-                    if (j < -bucketRangeY) j = -bucketRangeY;
-                    if (j > bucketRangeY) j = bucketRangeY;
                 }
             }
 
@@ -246,48 +249,51 @@ namespace SFQuadTree
             var bucketRangeY = (int)(range / m_BucketHeight) + 1;
             if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
 
-            for (int i = -bucketRangeX; i <= bucketRangeX; i++)
+            for (int i = 0; i <= bucketRangeX; i++)
             {
-                for (int j = -bucketRangeY; j <= bucketRangeY; j++)
+                for (int j = 0; j <= bucketRangeY; j++)
                 {
-                    var nextIdx = idx + (i + (j * m_NumBucketsWidth));
-                    // If index is out of range
-                    if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
-                        continue;
-
-                    if (m_Buckets[nextIdx] == null)
-                        continue;
-
-                    var bucket = m_Buckets[nextIdx];
-                    for (int n = 0; n < bucket.Count; n++)
+                    for (int m = -1; m < 2; m += 2)
                     {
-                        var ds = (bucket[n].Position - pos).SquaredLength();
-                        if (ds > range * range)
+                        var nextIdx = idx + (m * (i + (j * m_NumBucketsWidth)));
+                        // If index is out of range
+                        if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
                             continue;
 
-                        if (results.Count < k)
-                        {
-                            results.Enqueue(bucket[n], ds);
+                        if (m_Buckets[nextIdx] == null)
                             continue;
+
+                        var bucket = m_Buckets[nextIdx];
+                        for (int n = 0; n < bucket.Count; n++)
+                        {
+                            var ds = (bucket[n].Position - pos).SquaredLength();
+                            if (ds > range * range)
+                                continue;
+
+                            if (results.Count < k)
+                            {
+                                results.Enqueue(bucket[n], ds);
+                                continue;
+                            }
+
+                            if (ds < results.GetPriority(results.Peek()))
+                            {
+                                results.Dequeue();
+                                results.Enqueue(bucket[n], ds);
+                                range = (float)Math.Sqrt(results.GetPriority(results.Peek()));
+                            }
                         }
 
-                        if (ds < results.GetPriority(results.Peek()))
-                        {
-                            results.Dequeue();
-                            results.Enqueue(bucket[n], ds);
-                            range = (float)Math.Sqrt(results.GetPriority(results.Peek()));
-                        }
+                        bucketRangeX = (int)(range / m_BucketWidth) + 1;
+                        if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
+                        bucketRangeY = (int)(range / m_BucketHeight) + 1;
+                        if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
+
+                        if (i < -bucketRangeX) i = -bucketRangeX - 1;
+                        if (i > bucketRangeX) i = bucketRangeX;
+                        if (j < -bucketRangeY) j = -bucketRangeY - 1;
+                        if (j > bucketRangeY) j = bucketRangeY;
                     }
-
-                    bucketRangeX = (int)(range / m_BucketWidth) + 1;
-                    if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
-                    bucketRangeY = (int)(range / m_BucketHeight) + 1;
-                    if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
-
-                    if (i < -bucketRangeX) i = -bucketRangeX - 1;
-                    if (i > bucketRangeX) i = bucketRangeX;
-                    if (j < -bucketRangeY) j = -bucketRangeY - 1;
-                    if (j > bucketRangeY) j = bucketRangeY;
                 }
             }
         }

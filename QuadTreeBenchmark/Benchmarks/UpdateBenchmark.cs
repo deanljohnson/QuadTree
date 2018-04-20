@@ -62,16 +62,27 @@ namespace QuadTreeBenchmark.Benchmarks
             m_Grid.Update();
         }
 
-        [Benchmark]
+        /*[Benchmark]
         public void QuadTreeRebuild()
         {
             m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100), m_Objects);
         }
 
-        /*[Benchmark]
+        [Benchmark]
         public void BucketGridRebuild()
         {
             m_Grid = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100), m_Objects);
+        }*/
+
+        /*[Benchmark]
+        public void AddDeleteQuad()
+        {
+            var obj = m_Objects[m_Random.Next(0, m_Objects.Count)];
+
+            m_Tree.Remove(obj);
+            m_Tree.Update();
+            m_Tree.Add(obj);
+            m_Tree.Update();
         }*/
 
         private Vector2f RandomPosition()
