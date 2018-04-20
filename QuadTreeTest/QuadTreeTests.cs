@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PriorityQueue;
 using SFML.Graphics;
 using SFML.System;
-using SFQuadTree;
+using QuadTree;
 
 namespace QuadTreeTest
 {

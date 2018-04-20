@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using SFML.Graphics;
 
-namespace SFQuadTree
+namespace QuadTree
 {
     public static class QuadTreeVisualization
     {

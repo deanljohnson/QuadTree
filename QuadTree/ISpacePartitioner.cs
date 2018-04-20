@@ -3,7 +3,7 @@ using SFML.Graphics;
 using SFML.System;
 using PriorityQueue;
 
-namespace SFQuadTree
+namespace QuadTree
 {
     interface ISpacePartitioner<T>
     {

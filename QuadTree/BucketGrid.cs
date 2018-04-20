@@ -7,7 +7,7 @@ using QuadTree;
 using SFML.Graphics;
 using SFML.System;
 
-namespace SFQuadTree
+namespace QuadTree
 {
     public class BucketGrid<T> : ISpacePartitioner<T>
         where T : Transformable

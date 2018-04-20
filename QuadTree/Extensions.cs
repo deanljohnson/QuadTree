@@ -3,7 +3,7 @@ using System.Diagnostics;
 using SFML.Graphics;
 using SFML.System;
 
-namespace SFQuadTree
+namespace QuadTree
 {
     public static class Extensions
     {

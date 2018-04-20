@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using SFML.Graphics;
 using SFML.System;
-using SFQuadTree;
+using QuadTree;
 
 namespace QuadTreeBenchmark.Benchmarks
 {
