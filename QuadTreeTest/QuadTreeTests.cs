@@ -95,6 +95,11 @@ namespace QuadTreeTest
             Assert.AreEqual(tree.Count, 2);
             tree.Update();
             Assert.AreEqual(tree.Count, 0);
+
+#if DEBUG
+            AssertThrows<ArgumentException>(() => tree.Add(null));
+            AssertThrows<ArgumentException>(() => tree.Remove(null));
+#endif
         }
 
         [TestMethod]
