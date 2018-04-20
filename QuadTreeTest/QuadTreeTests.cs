@@ -297,6 +297,61 @@ namespace QuadTreeTest
             Assert.AreEqual(tree.GetClosestObject(new Vector2f(-1,-1)), objs[0]);
         }
 
+        [TestMethod]
+        public void MovingObjectsTest()
+        {
+            TestObject[] objs = {
+                new TestObject(250,250),
+                new TestObject(450,450),
+                new TestObject(750,250),
+                new TestObject(750,750),
+                new TestObject(250,750)
+            };
+
+            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
+
+            foreach (var obj in objs)
+            {
+                tree.Add(obj);
+            }
+
+            List<FloatRect> regions = new List<FloatRect>();
+
+            tree.Update();
+            tree.GetAllRegions(regions);
+            Assert.AreEqual(8, regions.Count);
+            regions.Clear();
+
+            objs[1].Position = new Vector2f(125, 125);
+            tree.Update();
+            tree.GetAllRegions(regions);
+            Assert.AreEqual(8, regions.Count);
+            regions.Clear();
+
+            objs[0].Position = new Vector2f(675, 675);
+            tree.Remove(objs[0]);
+            tree.Update();
+            // Currently takes an extra update for the tree
+            // to prune a certain empty node. Hopefully this 
+            // can be improved eventually. This test should 
+            // tell us if something ever changes with this issue.
+            tree.Update();
+            tree.GetAllRegions(regions);
+            Assert.AreEqual(7, regions.Count);
+            regions.Clear();
+        }
+
+        [TestMethod]
+        public void InvalidObjectPositionTest()
+        {
+            var tree = new QuadTree<TestObject>(m_Bounds);
+
+            tree.Add(new TestObject(-10, -10));
+            tree.Add(new TestObject(10, 10));
+
+            AssertThrows<Exception>(() => tree.Update());
+        }
+
         private bool HaveSameElements<T>(T[] a, T[] b)
         {
             for (int i = 0; i < a.Length; i++)
