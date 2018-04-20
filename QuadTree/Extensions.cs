@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using SFML.Graphics;
 using SFML.System;
 
@@ -23,11 +22,6 @@ namespace QuadTree
         public static float SquaredLength(this Vector2f v)
         {
             return (v.X * v.X) + (v.Y * v.Y);
-        }
-
-        public static float Dot(this Vector2f a, Vector2f b)
-        {
-            return (a.X * b.X) + (a.Y * b.Y);
         }
 
         public static float SquaredDistance(this FloatRect f, Vector2f v)
