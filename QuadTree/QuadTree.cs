@@ -432,10 +432,8 @@ namespace QuadTree
             {
                 lock (m_PendingInsertion)
                 {
-                    while (m_PendingInsertion.Count != 0)
-                    {
-                        Insert(m_PendingInsertion.Dequeue());
-                    }
+                    Insert(m_PendingInsertion);
+                    m_PendingInsertion.Clear();
                 }
             }
 
@@ -484,28 +482,7 @@ namespace QuadTree
             MoveObjectsToChildren();
         }
 
-        private void Insert(T obj)
-        {
-            if (obj == null)
-                return;
-
-            m_Objects.Add(obj);
-
-            if (m_Objects.Count < NumObjects && m_Leaf)
-            {
-                return;
-            }
-
-            //Smallest we can get, no more subdividing
-            //For an quadtree, all the bounds are squares, so we only 
-            //need to check one axis
-            if (m_Region.Width > MinSize)
-            {
-                MoveObjectsToChildren();
-            }
-        }
-
-        private void Insert(List<T> objs)
+        private void Insert(IEnumerable<T> objs)
         {
             m_Objects.AddRange(objs);
 
@@ -561,7 +538,7 @@ namespace QuadTree
                 }
 
                 if (!moved)
-                    throw new Exception("Unable to move an object into a child region");
+                    throw new Exception("Unable to move an object into a child region. Is the object outside the bounds of the QuadTree?");
             }
 
             m_Objects.Clear();
