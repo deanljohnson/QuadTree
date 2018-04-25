@@ -239,7 +239,7 @@ namespace QuadTree
 
                     var ds = (pos - obj.Position).SquaredLength();
 
-                    if (!(ds < distanceSquared))
+                    if (ds > distanceSquared)
                         continue;
 
                     distanceSquared = ds;
@@ -256,7 +256,7 @@ namespace QuadTree
                 //If a border is closer than the closest distance so far, it might have a closer object
                 var distToChildBorder = m_ChildNodes[i].m_Region.SquaredDistance(pos);
 
-                if (!(distToChildBorder < distanceSquared))
+                if (distToChildBorder > distanceSquared)
                     continue;
 
                 var testObject = m_ChildNodes[i].NearestNeighborSearch(pos, ref distanceSquared);
@@ -343,7 +343,7 @@ namespace QuadTree
                 //If a border is closer than the farthest distance so far, it might have a closer object
                 var distToChildBorder = m_ChildNodes[i].m_Region.SquaredDistance(pos);
 
-                if ((distToChildBorder > rangeSquared))
+                if (distToChildBorder > rangeSquared)
                     continue;
 
                 m_ChildNodes[i].AllNearestNeighborsSearch(pos, rangeSquared, results);
