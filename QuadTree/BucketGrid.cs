@@ -26,10 +26,6 @@ namespace QuadTree
         public BucketGrid(FloatRect region, int numBucketsWidth, int numBucketsHeight)
         {
             m_Region = region;
-            m_Region.Left -= float.Epsilon;
-            m_Region.Top -= float.Epsilon;
-            m_Region.Width += float.Epsilon;
-            m_Region.Height += float.Epsilon;
             m_Buckets = new List<T>[numBucketsWidth * numBucketsHeight];
 
             m_NumBucketsWidth = numBucketsWidth;
@@ -292,9 +288,9 @@ namespace QuadTree
                         bucketRangeY = (int)(range / m_BucketHeight) + 1;
                         if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
 
-                        if (i < -bucketRangeX) i = -bucketRangeX - 1;
+                        if (i < -bucketRangeX) i = -bucketRangeX;
                         if (i > bucketRangeX) i = bucketRangeX;
-                        if (j < -bucketRangeY) j = -bucketRangeY - 1;
+                        if (j < -bucketRangeY) j = -bucketRangeY;
                         if (j > bucketRangeY) j = bucketRangeY;
                     }
                 }

@@ -74,6 +74,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BucketGridTests.cs" />
     <Compile Include="QuadTreeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpacePartitionerTests.cs" />
