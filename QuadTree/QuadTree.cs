@@ -548,7 +548,7 @@ namespace QuadTree
                 if (m_ChildNodes[i] == null)
                 {
                     m_Leaf = false;
-                    m_ChildNodes[i] = CreateChildNode(quads[i], octList[i]);
+                    m_ChildNodes[i] = new QuadTree<T>(quads[i], octList[i], this);
                 }
                 else
                 {
@@ -577,12 +577,6 @@ namespace QuadTree
             return false;
         }
 
-        private QuadTree<T> CreateChildNode(FloatRect region, List<T> objects)
-        {
-            return objects.Count == 0
-                ? null
-                : new QuadTree<T>(region, objects, this);
-        }
         #endregion
 
         public void GetAllRegions(List<FloatRect> regions)
