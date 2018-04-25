@@ -9,29 +9,9 @@ using QuadTree;
 
 namespace QuadTreeTest
 {
-    // TODO: add tests for moving objects and proper tree updating
-    // TODO: test what happends when objects are set to null while in the tree
     [TestClass]
     public class QuadTreeTests
     {
-        public class TestObject : Transformable
-        {
-            public TestObject()
-            {
-
-            }
-
-            public TestObject(Vector2f pos)
-            {
-                Position = pos;
-            }
-
-            public TestObject(float x, float y)
-            {
-                Position = new Vector2f(x, y);
-            }
-        }
-
         private readonly FloatRect m_Bounds = new FloatRect(0,0,1000,1000);
 
         [TestMethod]
