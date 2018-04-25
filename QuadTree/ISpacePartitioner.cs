@@ -5,7 +5,7 @@ using PriorityQueue;
 
 namespace QuadTree
 {
-    interface ISpacePartitioner<T>
+    public interface ISpacePartitioner<T>
     {
         void Update();
         void Add(T t);
