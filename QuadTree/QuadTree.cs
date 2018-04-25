@@ -457,15 +457,6 @@ namespace QuadTree
                     }
                 }
             }
-
-            for (var i = 0; i < m_Objects.Count; i++)
-            {
-                if (m_Objects[i] == null)
-                {
-                    m_Objects.RemoveAt(i);
-                    i--;
-                }
-            }
         }
 
         /// <summary>
@@ -531,9 +522,6 @@ namespace QuadTree
             for (var index = 0; index < m_Objects.Count; index++)
             {
                 var obj = m_Objects[index];
-
-                if (obj == null)
-                    continue;
 
                 bool moved = false;
                 for (var i = 0; i < 4; i++)
