@@ -176,7 +176,8 @@ namespace QuadTree
         /// </summary>
         public T GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
-            return NearestNeighborSearch(pos, maxDistance * maxDistance);
+            float maxRef = maxDistance * maxDistance;
+            return NearestNeighborSearch(pos, ref maxRef);
         }
 
         /// <summary>
@@ -225,7 +226,7 @@ namespace QuadTree
         #endregion
 
         #region Internal Queeries
-        private T NearestNeighborSearch(Vector2f pos, float distanceSquared)
+        private T NearestNeighborSearch(Vector2f pos, ref float distanceSquared)
         {
             T closest = null;
 
@@ -258,11 +259,10 @@ namespace QuadTree
                 if (!(distToChildBorder < distanceSquared))
                     continue;
 
-                var testObject = m_ChildNodes[i].NearestNeighborSearch(pos, distanceSquared);
+                var testObject = m_ChildNodes[i].NearestNeighborSearch(pos, ref distanceSquared);
                 if (testObject == null) continue; //Didn't find a closer object
 
                 closest = testObject;
-                distanceSquared = (pos - closest.Position).SquaredLength();
             }
 
             return closest;
@@ -526,7 +526,6 @@ namespace QuadTree
                 bool moved = false;
                 for (var i = 0; i < 4; i++)
                 {
-                    //TODO: Expand this to deal with objects with bounds, not just points
                     if (quads[i].Contains(obj.Position.X, obj.Position.Y))
                     {
                         octList[i].Add(obj);
