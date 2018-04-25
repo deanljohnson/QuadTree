@@ -7,6 +7,8 @@ namespace QuadTree
 {
     public interface ISpacePartitioner<T>
     {
+        int Count { get; }
+
         void Update();
         void Add(T t);
         void Remove(T t);

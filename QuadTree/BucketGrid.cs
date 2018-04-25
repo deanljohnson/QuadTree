@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using PriorityQueue;
-using QuadTree;
 using SFML.Graphics;
 using SFML.System;
 
@@ -42,6 +40,11 @@ namespace QuadTree
 
             m_PendingInsertion = new Queue<T>();
             m_PendingRemoval = new Queue<T>();
+        }
+
+        public int Count
+        {
+            get { return m_Buckets.Where(c => c != null).Sum(c => c.Count); }
         }
 
         public void Update()
