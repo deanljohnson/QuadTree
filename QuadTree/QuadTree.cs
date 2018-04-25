@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using PriorityQueue;
-using QuadTree;
 using SFML.Graphics;
 using SFML.System;
 
@@ -32,6 +30,7 @@ namespace QuadTree
         /// respected for leafs of this size.
         /// </summary>
         public static int MinSize = 5;
+
         /// <summary>
         /// The maximum number of objects to add to a 
         /// leaf node before splitting. Will be ignored 
@@ -39,11 +38,17 @@ namespace QuadTree
         /// </summary>
         public static int NumObjects = 1;
 
+        /// <summary>
+        /// The number of objects contained in the <see cref="QuadTree{T}"/>
+        /// </summary>
         public int Count
         {
             get { return m_Objects.Count + m_ChildNodes.Where(c => c != null).Sum(c => c.Count); }
         }
 
+        /// <summary>
+        /// The bounds of the <see cref="QuadTree{T}"/>
+        /// </summary>
         public FloatRect Bounds => m_Region;
 
         private QuadTree(FloatRect region, List<T> objects, QuadTree<T> parent)
@@ -76,6 +81,11 @@ namespace QuadTree
         {
         }
 
+        /// <summary>
+        /// Updates the <see cref="QuadTree{T}"/> by adding and/or
+        /// removing any items passed to <see cref="Add"/> or <see cref="Remove"/>
+        /// and by updating the tree to take into account objects that have moved
+        /// </summary>
         public void Update()
         {
             Insert(InternalUpdate());
