@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using PriorityQueue;
@@ -7,7 +8,7 @@ using SFML.System;
 
 namespace QuadTree
 {
-    public class QuadTree<T> : ISpacePartitioner<T>
+    public class QuadTree<T> : ISpacePartitioner<T>, IEnumerable<T>
         where T : Transformable
     {
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
@@ -586,6 +587,27 @@ namespace QuadTree
             {
                 childNode?.GetAllRegions(regions);
             }
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            if (m_Objects.Count > 0)
+            {
+                foreach (T obj in m_Objects)
+                    yield return obj;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (m_ChildNodes[i] == null)
+                    continue;
+                foreach (T obj in m_ChildNodes[i])
+                    yield return obj;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

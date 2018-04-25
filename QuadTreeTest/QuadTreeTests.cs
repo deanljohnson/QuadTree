@@ -359,6 +359,29 @@ namespace QuadTreeTest
             AssertThrows<Exception>(() => tree.Update());
         }
 
+        [TestMethod]
+        public void EnumerationTests()
+        {
+            var tree = new QuadTree<TestObject>(m_Bounds);
+
+            var one = new TestObject(1,1);
+            var two = new TestObject(2,2);
+            var three = new TestObject(3,3);
+
+            tree.Add(one);
+            tree.Add(two);
+            tree.Add(three);
+
+            tree.Update();
+
+            HashSet<TestObject> enumerated = new HashSet<TestObject>(tree);
+
+            Assert.IsTrue(enumerated.Contains(one));
+            Assert.IsTrue(enumerated.Contains(two));
+            Assert.IsTrue(enumerated.Contains(three));
+            Assert.AreEqual(3, enumerated.Count);
+        }
+
         private bool HaveSameElements<T>(T[] a, T[] b)
         {
             for (int i = 0; i < a.Length; i++)
