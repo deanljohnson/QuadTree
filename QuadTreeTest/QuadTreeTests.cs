@@ -96,6 +96,13 @@ namespace QuadTreeTest
             tree.Update();
             Assert.AreEqual(tree.Count, 0);
 
+            // Making sure removing an object not
+            // in the tree doesn't cause any problems
+            tree.Add(one);
+            tree.Remove(two); // Not in tree
+            tree.Update();
+            Assert.AreEqual(tree.Count, 1);
+
 #if DEBUG
             AssertThrows<ArgumentException>(() => tree.Add(null));
             AssertThrows<ArgumentException>(() => tree.Remove(null));
