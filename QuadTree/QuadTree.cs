@@ -470,12 +470,10 @@ namespace QuadTree
                 return; //We are a leaf node - we are done
             }
 
-            var dimensions = m_Region.Dimensions();
-
             //Smallest we can get, no more subdividing
             //For a quadTree, all the bounds are squares, so we only 
             //need to check one axis
-            if (dimensions.X <= MinSize)
+            if (m_Region.Width <= MinSize)
             {
                 return;
             }
