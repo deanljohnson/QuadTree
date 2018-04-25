@@ -11,7 +11,6 @@ namespace QuadTreeBenchmark.Benchmarks
     {
         private List<TestObject> m_Objects;
         private QuadTree<TestObject> m_Tree;
-        private BucketGrid<TestObject> m_Grid;
         private readonly Random m_Random;
 
         public string Name => "KClosest";
@@ -31,7 +30,6 @@ namespace QuadTreeBenchmark.Benchmarks
         public void Setup()
         {
             m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100));
-            m_Grid = new BucketGrid<TestObject>(new FloatRect(0, 0, 100, 100), 100, 100);
             m_Objects = new List<TestObject>(NumObjects);
 
             for (int i = 0; i < NumObjects; i++)
@@ -39,23 +37,15 @@ namespace QuadTreeBenchmark.Benchmarks
                 var obj = new TestObject(RandomPosition());
                 m_Objects.Add(obj);
                 m_Tree.Add(obj);
-                m_Grid.Add(obj);
             }
 
             m_Tree.Update();
-            m_Grid.Update();
         }
 
         [Benchmark]
         public void KClosestQuad()
         {
             m_Tree.GetKClosestObjects(RandomPosition(), K, (float) (m_Random.NextDouble() * 100));
-        }
-
-        [Benchmark]
-        public void KClosestGrid()
-        {
-            m_Grid.GetKClosestObjects(RandomPosition(), K, (float)(m_Random.NextDouble() * 100));
         }
 
         private Vector2f RandomPosition()
