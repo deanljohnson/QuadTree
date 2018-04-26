@@ -23,6 +23,14 @@ namespace QuadTree
         private readonly FloatRect m_Region;
         private readonly List<T>[] m_Buckets;
 
+        /// <summary>
+        /// The number of objects contained in the <see cref="BucketGrid{T}"/>
+        /// </summary>
+        public int Count
+        {
+            get { return m_Buckets.Where(c => c != null).Sum(c => c.Count); }
+        }
+
         public BucketGrid(FloatRect region, int numBucketsWidth, int numBucketsHeight)
         {
             m_Region = region;
@@ -38,11 +46,11 @@ namespace QuadTree
             m_PendingRemoval = new Queue<T>();
         }
 
-        public int Count
-        {
-            get { return m_Buckets.Where(c => c != null).Sum(c => c.Count); }
-        }
-
+        /// <summary>
+        /// Updates the <see cref="BucketGrid{T}"/> by adding and/or
+        /// removing any items passed to <see cref="Add"/> or <see cref="Remove"/>
+        /// and by updating the grid to take into account objects that have moved
+        /// </summary>
         public void Update()
         {
             // Make sure all objects are in the right buckets
@@ -62,17 +70,6 @@ namespace QuadTree
                 }
             }
 
-            lock (m_PendingRemoval)
-            {
-                while (m_PendingRemoval.Count > 0)
-                {
-                    var obj = m_PendingRemoval.Dequeue();
-                    var idx = FindBucketIndex(obj.Position);
-                    if (m_Buckets[idx] == null) m_Buckets[idx] = new List<T>();
-                    m_Buckets[idx].Remove(obj);
-                }
-            }
-
             lock (m_PendingInsertion)
             {
                 while (m_PendingInsertion.Count > 0)
@@ -81,6 +78,18 @@ namespace QuadTree
                     var idx = FindBucketIndex(obj.Position);
                     if (m_Buckets[idx] == null) m_Buckets[idx] = new List<T>();
                     m_Buckets[idx].Add(obj);
+                }
+            }
+
+            lock (m_PendingRemoval)
+            {
+                while (m_PendingRemoval.Count > 0)
+                {
+                    var obj = m_PendingRemoval.Dequeue();
+                    var idx = FindBucketIndex(obj.Position);
+                    if (m_Buckets[idx] == null) m_Buckets[idx] = new List<T>();
+                    m_Buckets[idx].Remove(obj);
+                    if (m_Buckets[idx].Count == 0) m_Buckets[idx] = null;
                 }
             }
         }
@@ -113,15 +122,12 @@ namespace QuadTree
                 m_PendingRemoval.Enqueue(t);
         }
 
-        public T GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
-        {
-#if DEBUG
-            if (maxDistance < 0f)
-                throw new ArgumentException("Range cannot be negative");
-#endif
-            return NearestNeighborSearch(pos, maxDistance);
-        }
+        #region Non-Thread-Safe Queries
 
+        /// <summary>
+        /// Gets the K closest objects to a given position.
+        /// This version of the query is not thread safe.
+        /// </summary>
         public T[] GetKClosestObjects(Vector2f pos, uint k, float range = float.MaxValue)
         {
 #if DEBUG
@@ -133,6 +139,10 @@ namespace QuadTree
             return CachedQueue.ToArray();
         }
 
+        /// <summary>
+        /// Gets all objects within the given range of the given position.
+        /// This version of the query is not thread safe.
+        /// </summary>
         public T[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
 #if DEBUG
@@ -144,6 +154,10 @@ namespace QuadTree
             return CachedList.ToArray();
         }
 
+        /// <summary>
+        /// Gets all objects within the given <see cref="FloatRect"/>.
+        /// This version of the query is not thread safe.
+        /// </summary>
         public T[] GetObjectsInRect(FloatRect rect)
         {
             CachedList.Clear();
@@ -151,6 +165,29 @@ namespace QuadTree
             return CachedList.ToArray();
         }
 
+        #endregion
+
+        #region Thread-Safe Queries
+
+        /// <summary>
+        /// Gets the closest object to the given position.
+        /// This version of the query is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
+        public T GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
+        {
+#if DEBUG
+            if (maxDistance < 0f)
+                throw new ArgumentException("Range cannot be negative");
+#endif
+            return NearestNeighborSearch(pos, maxDistance);
+        }
+
+        /// <summary>
+        /// Gets the K closest objects to a given position.
+        /// This version of the query is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
         public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<T> results)
         {
 #if DEBUG
@@ -162,6 +199,11 @@ namespace QuadTree
             KNearestNeighborSearch(pos, k, range, results);
         }
 
+        /// <summary>
+        /// Gets all objects within the given range of the given position.
+        /// This version of the query is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
         public void GetObjectsInRange(Vector2f pos, float range, IList<T> results)
         {
 #if DEBUG
@@ -173,6 +215,11 @@ namespace QuadTree
             AllNearestNeighborSearch(pos, range, results);
         }
 
+        /// <summary>
+        /// Gets all objects within the given <see cref="FloatRect"/>.
+        /// This version of the query is thread safe as long as
+        /// <see cref="Update"/> does not execute during the queery.
+        /// </summary>
         public void GetObjectsInRect(FloatRect rect, IList<T> results)
         {
 #if DEBUG
@@ -181,6 +228,8 @@ namespace QuadTree
 #endif
             ObjectsInRectSearch(rect, results);
         }
+
+        #endregion
 
         private T NearestNeighborSearch(Vector2f pos, float range)
         {
