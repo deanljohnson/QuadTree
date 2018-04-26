@@ -115,11 +115,19 @@ namespace QuadTree
 
         public T GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
+#if DEBUG
+            if (maxDistance < 0f)
+                throw new ArgumentException("Range cannot be negative");
+#endif
             return NearestNeighborSearch(pos, maxDistance);
         }
 
         public T[] GetKClosestObjects(Vector2f pos, uint k, float range = float.MaxValue)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+#endif
             CachedQueue.Clear();
             KNearestNeighborSearch(pos, k, range, CachedQueue);
             return CachedQueue.ToArray();
@@ -127,6 +135,10 @@ namespace QuadTree
 
         public T[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+#endif
             CachedList.Clear();
             AllNearestNeighborSearch(pos, range, CachedList);
             return CachedList.ToArray();
@@ -141,16 +153,32 @@ namespace QuadTree
 
         public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<T> results)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+            if (results == null)
+                throw new ArgumentException("Results queue cannot be null");
+#endif
             KNearestNeighborSearch(pos, k, range, results);
         }
 
         public void GetObjectsInRange(Vector2f pos, float range, IList<T> results)
         {
+#if DEBUG
+            if (range < 0f)
+                throw new ArgumentException("Range cannot be negative");
+            if (results == null)
+                throw new ArgumentException("Results list cannot be null");
+#endif
             AllNearestNeighborSearch(pos, range, results);
         }
 
         public void GetObjectsInRect(FloatRect rect, IList<T> results)
         {
+#if DEBUG
+            if (results == null)
+                throw new ArgumentException("Results list cannot be null");
+#endif
             ObjectsInRectSearch(rect, results);
         }
 
@@ -164,41 +192,35 @@ namespace QuadTree
             var bucketRangeY = (int) (range / m_BucketHeight) + 1;
             if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
 
-            for (int i = 0; i <= bucketRangeX; i++)
+            for (int d = 0; d <= Math.Max(bucketRangeX, bucketRangeY); d++)
             {
-                for (int j = 0; j <= bucketRangeY; j++)
+                int dx = Math.Min(d, bucketRangeX);
+                int dy = Math.Min(d, bucketRangeY);
+
+                foreach (int nextIdx in BucketsAtRange(idx, dx, dy))
                 {
-                    for (int m = -1; m < 2; m += 2)
+                    // If index is out of range
+                    if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
+                        continue;
+
+                    if (m_Buckets[nextIdx] == null)
+                        continue;
+
+                    var bucket = m_Buckets[nextIdx];
+                    for (int k = 0; k < bucket.Count; k++)
                     {
-                        var nextIdx = idx + (m * (i + (j * m_NumBucketsWidth)));
-                        // If index is out of range
-                        if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
-                            continue;
-
-                        if (m_Buckets[nextIdx] == null)
-                            continue;
-
-                        var bucket = m_Buckets[nextIdx];
-                        for (int k = 0; k < bucket.Count; k++)
+                        var ds = (bucket[k].Position - pos).SquaredLength();
+                        if (ds < range * range)
                         {
-                            var ds = (bucket[k].Position - pos).SquaredLength();
-                            if (ds < range * range)
-                            {
-                                closest = bucket[k];
-                                range = (float)Math.Sqrt(ds);
-                            }
+                            closest = bucket[k];
+                            range = (float)Math.Sqrt(ds);
                         }
-
-                        bucketRangeX = (int)(range / m_BucketWidth) + 1;
-                        if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
-                        bucketRangeY = (int)(range / m_BucketHeight) + 1;
-                        if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
-
-                        if (i < -bucketRangeX) i = -bucketRangeX;
-                        if (i > bucketRangeX) i = bucketRangeX;
-                        if (j < -bucketRangeY) j = -bucketRangeY;
-                        if (j > bucketRangeY) j = bucketRangeY;
                     }
+
+                    bucketRangeX = (int)(range / m_BucketWidth) + 1;
+                    if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
+                    bucketRangeY = (int)(range / m_BucketHeight) + 1;
+                    if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
                 }
             }
 
@@ -248,51 +270,45 @@ namespace QuadTree
             var bucketRangeY = (int)(range / m_BucketHeight) + 1;
             if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
 
-            for (int i = 0; i <= bucketRangeX; i++)
+            for (int d = 0; d <= Math.Max(bucketRangeX, bucketRangeY); d++)
             {
-                for (int j = 0; j <= bucketRangeY; j++)
+                int dx = Math.Min(d, bucketRangeX);
+                int dy = Math.Min(d, bucketRangeY);
+
+                foreach (int nextIdx in BucketsAtRange(idx, dx, dy))
                 {
-                    for (int m = -1; m < 2; m += 2)
+                    // If index is out of range
+                    if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
+                        continue;
+
+                    if (m_Buckets[nextIdx] == null)
+                        continue;
+
+                    var bucket = m_Buckets[nextIdx];
+                    for (int n = 0; n < bucket.Count; n++)
                     {
-                        var nextIdx = idx + (m * (i + (j * m_NumBucketsWidth)));
-                        // If index is out of range
-                        if (nextIdx < 0 || nextIdx >= m_Buckets.Length)
+                        var ds = (bucket[n].Position - pos).SquaredLength();
+                        if (ds > range * range)
                             continue;
 
-                        if (m_Buckets[nextIdx] == null)
-                            continue;
-
-                        var bucket = m_Buckets[nextIdx];
-                        for (int n = 0; n < bucket.Count; n++)
+                        if (results.Count < k)
                         {
-                            var ds = (bucket[n].Position - pos).SquaredLength();
-                            if (ds > range * range)
-                                continue;
-
-                            if (results.Count < k)
-                            {
-                                results.Enqueue(bucket[n], ds);
-                                continue;
-                            }
-
-                            if (ds < results.GetPriority(results.Peek()))
-                            {
-                                results.Dequeue();
-                                results.Enqueue(bucket[n], ds);
-                                range = (float)Math.Sqrt(results.GetPriority(results.Peek()));
-                            }
+                            results.Enqueue(bucket[n], ds);
+                            continue;
                         }
 
-                        bucketRangeX = (int)(range / m_BucketWidth) + 1;
-                        if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
-                        bucketRangeY = (int)(range / m_BucketHeight) + 1;
-                        if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
-
-                        if (i < -bucketRangeX) i = -bucketRangeX;
-                        if (i > bucketRangeX) i = bucketRangeX;
-                        if (j < -bucketRangeY) j = -bucketRangeY;
-                        if (j > bucketRangeY) j = bucketRangeY;
+                        if (ds < results.GetPriority(results.Peek()))
+                        {
+                            results.Dequeue();
+                            results.Enqueue(bucket[n], ds);
+                            range = (float)Math.Sqrt(results.GetPriority(results.Peek()));
+                        }
                     }
+
+                    bucketRangeX = (int)(range / m_BucketWidth) + 1;
+                    if (bucketRangeX < 0) bucketRangeX = m_NumBucketsWidth / 2;
+                    bucketRangeY = (int)(range / m_BucketHeight) + 1;
+                    if (bucketRangeY < 0) bucketRangeY = m_NumBucketsHeight / 2;
                 }
             }
         }
@@ -332,17 +348,45 @@ namespace QuadTree
             }
         }
 
-        private List<T> FindBucket(Vector2f pos)
+        /// <summary>
+        /// Returns the rectangle of indices the given 
+        /// dx and dy away from the given center
+        /// </summary>
+        private IEnumerable<int> BucketsAtRange(int center, int dx, int dy)
         {
-            // TODO: what happens if pos is out of bounds?
+            // Top row
+            for (int i = -dx; i <= dx; i++)
+            {
+                yield return center + (dx - (dy * m_NumBucketsWidth));
+            }
 
-            var fromLeft = pos.X - m_Region.Left;
-            var x = (int)(fromLeft / m_BucketWidth);
+            // Bottom row
+            if (dy != 0)
+            {
+                for (int i = -dx; i <= dx; i++)
+                {
+                    yield return center + (dx + (dy * m_NumBucketsWidth));
+                }
+            }
 
-            var fromTop = pos.Y - m_Region.Top;
-            var y = (int)(fromTop / m_BucketHeight);
+            // Left column
+            for (int j = -dy + 1; j <= dy - 1; j++)
+            {
+                if (dx == 0 && j == 0)
+                    continue;
+                yield return center + (-dx + (dy * m_NumBucketsWidth));
+            }
 
-            return m_Buckets[x + (y*m_NumBucketsWidth)];
+            // right column
+            if (dx != 0)
+            {
+                for (int j = -dy + 1; j <= dy - 1; j++)
+                {
+                    if (dx == 0 && j == 0)
+                        continue;
+                    yield return center + (dx + (dy * m_NumBucketsWidth));
+                }
+            }
         }
 
         private int FindBucketIndex(Vector2f pos)
