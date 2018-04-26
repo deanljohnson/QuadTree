@@ -120,11 +120,11 @@ namespace QuadTree
                 m_PendingRemoval.Enqueue(t);
         }
 
-        #region Non-Thread-Safe Queeries
+        #region Non-Thread-Safe Queries
 
         /// <summary>
         /// Gets the K closest objects to a given position.
-        /// This version of the queery is not thread safe.
+        /// This version of the query is not thread safe.
         /// </summary>
         public T[] GetKClosestObjects(Vector2f pos, uint k, float range = float.MaxValue)
         {
@@ -140,7 +140,7 @@ namespace QuadTree
 
         /// <summary>
         /// Gets all objects within the given range of the given position.
-        /// This version of the queery is not thread safe.
+        /// This version of the query is not thread safe.
         /// </summary>
         public T[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue)
         {
@@ -155,8 +155,8 @@ namespace QuadTree
         }
 
         /// <summary>
-        /// Gets all objects within the given FloatRect.
-        /// This version of the queery is not thread safe.
+        /// Gets all objects within the given <see cref="FloatRect"/>.
+        /// This version of the query is not thread safe.
         /// </summary>
         public T[] GetObjectsInRect(FloatRect rect)
         {
@@ -168,11 +168,11 @@ namespace QuadTree
 
         #endregion
 
-        #region Thread-Safe Queeries
+        #region Thread-Safe Queries
 
         /// <summary>
         /// Gets the closest object to the given position.
-        /// This version of the queery is thread safe as long as
+        /// This version of the query is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
         public T GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
@@ -187,7 +187,7 @@ namespace QuadTree
 
         /// <summary>
         /// Gets the K closest objects to a given position.
-        /// This version of the queery is thread safe as long as
+        /// This version of the query is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
         public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<T> results)
@@ -204,7 +204,7 @@ namespace QuadTree
 
         /// <summary>
         /// Gets all objects within the given range of the given position.
-        /// This version of the queery is thread safe as long as
+        /// This version of the query is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
         public void GetObjectsInRange(Vector2f pos, float range, IList<T> results)
@@ -219,8 +219,8 @@ namespace QuadTree
         }
 
         /// <summary>
-        /// Gets all objects within the given FloatRect.
-        /// This version of the queery is thread safe as long as
+        /// Gets all objects within the given <see cref="FloatRect"/>.
+        /// This version of the query is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
         public void GetObjectsInRect(FloatRect rect, IList<T> results)
