@@ -225,6 +225,11 @@ namespace QuadTreeTest
             resultsList.Clear();
             partitioner.GetObjectsInRect(new FloatRect(-1, -1, 60, 60), resultsList);
             Assert.IsTrue(HaveSameElements(resultsList.ToArray(), new[] { objs[0], objs[1], objs[2], objs[3] }));
+
+#if DEBUG
+            AssertThrows<ArgumentException>(
+                () => partitioner.GetObjectsInRect(new FloatRect(1,1,0,0), null));
+#endif
         }
 
         public static void GetClosestObjectTest(ISpacePartitioner<TestObject> partitioner)
@@ -248,6 +253,10 @@ namespace QuadTreeTest
             Assert.AreEqual(partitioner.GetClosestObject(new Vector2f(5, 5)), objs[2]);
             Assert.AreEqual(partitioner.GetClosestObject(new Vector2f(5, 5), 1), null);
             Assert.AreEqual(partitioner.GetClosestObject(new Vector2f(-1, -1)), objs[0]);
+
+#if DEBUG
+            AssertThrows<ArgumentException>(() => partitioner.GetClosestObject(new Vector2f(0,0), -1f));
+#endif
         }
 
         private static bool HaveSameElements<T>(T[] a, T[] b)

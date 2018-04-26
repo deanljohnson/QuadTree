@@ -177,6 +177,10 @@ namespace QuadTree
         /// </summary>
         public T GetClosestObject(Vector2f pos, float maxDistance = float.MaxValue)
         {
+#if DEBUG
+            if (maxDistance < 0f)
+                throw new ArgumentException("Range cannot be negative");
+#endif
             float maxRef = maxDistance * maxDistance;
             return NearestNeighborSearch(pos, ref maxRef);
         }
@@ -221,6 +225,10 @@ namespace QuadTree
         /// </summary>
         public void GetObjectsInRect(FloatRect rect, IList<T> results)
         {
+#if DEBUG
+            if (results == null)
+                throw new ArgumentException("Results list cannot be null");
+#endif
             ObjectsInRectSearch(rect, results);
         }
 
