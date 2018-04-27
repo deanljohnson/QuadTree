@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using PriorityQueue;
+using Priority_Queue;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
@@ -211,11 +211,11 @@ namespace QuadTreeDemo
                 threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetClosestObject(GetRandomPos(), (float)(100 + Random.NextDouble() * 400)); }));
                 threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetClosestObject(GetRandomPos(), (float)(100 + Random.NextDouble() * 400)); }));
 
-                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
-                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new PriorityQueue<Transformable>(true)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new FastPriorityQueue<ItemNode<Transformable>>(20)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new FastPriorityQueue<ItemNode<Transformable>>(20)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new FastPriorityQueue<ItemNode<Transformable>>(20)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new FastPriorityQueue<ItemNode<Transformable>>(20)); }));
+                threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetKClosestObjects(GetRandomPos(), (uint)Random.Next(5, 20), (float)(100 + Random.NextDouble() * 400), new FastPriorityQueue<ItemNode<Transformable>>(20)); }));
 
                 threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));
                 threads.Add(new Thread(() => { start.WaitOne(); m_Tree.GetObjectsInRange(GetRandomPos(), (float)(100 + Random.NextDouble() * 400), new List<Transformable>()); }));

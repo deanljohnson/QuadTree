@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PriorityQueue;
+using Priority_Queue;
 using QuadTree;
 using SFML.Graphics;
 using SFML.System;
@@ -100,24 +100,24 @@ namespace QuadTreeTest
                 () => partitioner.GetKClosestObjects(new Vector2f(51, 51), 3, -10f));
 #endif
 
-            PriorityQueue<TestObject> resultsQueue = new PriorityQueue<TestObject>(true);
+            FastPriorityQueue<ItemNode<TestObject>> resultsQueue = new FastPriorityQueue<ItemNode<TestObject>>(1);
             partitioner.GetKClosestObjects(new Vector2f(1, 1), 1, float.MaxValue, resultsQueue);
-            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[0] }));
+            Assert.IsTrue(HaveSameElements(resultsQueue.Select(node => node.Item).ToArray(), new[] { objs[0] }));
 
-            resultsQueue.Clear();
+            resultsQueue = new FastPriorityQueue<ItemNode<TestObject>>(3);
             partitioner.GetKClosestObjects(new Vector2f(1, 1), 3, float.MaxValue, resultsQueue);
-            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[0], objs[1], objs[2] }));
+            Assert.IsTrue(HaveSameElements(resultsQueue.Select(node => node.Item).ToArray(), new[] { objs[0], objs[1], objs[2] }));
 
-            resultsQueue.Clear();
+            resultsQueue = new FastPriorityQueue<ItemNode<TestObject>>(3);
             partitioner.GetKClosestObjects(new Vector2f(51, 51), 3, float.MaxValue, resultsQueue);
-            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[1], objs[2], objs[3] }));
+            Assert.IsTrue(HaveSameElements(resultsQueue.Select(node => node.Item).ToArray(), new[] { objs[1], objs[2], objs[3] }));
 
-            resultsQueue.Clear();
+            resultsQueue = new FastPriorityQueue<ItemNode<TestObject>>(3);
             partitioner.GetKClosestObjects(new Vector2f(51, 51), 3, 10f, resultsQueue);
-            Assert.IsTrue(HaveSameElements(resultsQueue.ToArray(), new[] { objs[3] }));
+            Assert.IsTrue(HaveSameElements(resultsQueue.Select(node => node.Item).ToArray(), new[] { objs[3] }));
 
 #if DEBUG
-            resultsQueue.Clear();
+            resultsQueue = new FastPriorityQueue<ItemNode<TestObject>>(3);
             AssertThrows<ArgumentException>(
                 () => partitioner.GetKClosestObjects(new Vector2f(51, 51), 3, -10f, resultsQueue));
             AssertThrows<ArgumentException>(
