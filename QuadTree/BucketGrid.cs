@@ -342,15 +342,15 @@ namespace QuadTree
 
                         if (results.Count < k)
                         {
-                            results.Enqueue(new ItemNode<T>(bucket[n]), ds);
+                            results.Enqueue(new ItemNode<T>(bucket[n]), -ds);
                             continue;
                         }
 
-                        if (ds < results.First.Priority)
+                        if (-ds > results.First.Priority)
                         {
                             results.Dequeue();
-                            results.Enqueue(new ItemNode<T>(bucket[n]), ds);
-                            range = (float)Math.Sqrt(results.First.Priority);
+                            results.Enqueue(new ItemNode<T>(bucket[n]), -ds);
+                            range = (float)Math.Sqrt(-results.First.Priority);
                         }
                     }
 

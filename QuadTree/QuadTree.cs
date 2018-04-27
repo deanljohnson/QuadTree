@@ -293,15 +293,15 @@ namespace QuadTree
                     //If results list has empty elements
                     if (results.Count < k)
                     {
-                        results.Enqueue(new ItemNode<T>(obj), ds);
+                        results.Enqueue(new ItemNode<T>(obj), -ds);
                         continue;
                     }
 
-                    if (ds < results.First.Priority)
+                    if (-ds > results.First.Priority)
                     {
                         results.Dequeue();
-                        results.Enqueue(new ItemNode<T>(obj), ds);
-                        rangeSquared = results.First.Priority;
+                        results.Enqueue(new ItemNode<T>(obj), -ds);
+                        rangeSquared = -results.First.Priority;
                     }
                 }
                 return;
