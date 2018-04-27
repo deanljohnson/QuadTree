@@ -143,10 +143,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Benchmarks\AllInRangeBenchmark.cs" />
-    <Compile Include="Benchmarks\KClosestBenchmark.cs" />
-    <Compile Include="Benchmarks\SingleClosestBenchmark.cs" />
-    <Compile Include="Benchmarks\UpdateBenchmark.cs" />
+    <Compile Include="Benchmarks\QuadTree\AllInRangeBenchmark.cs" />
+    <Compile Include="Benchmarks\QuadTree\KClosestBenchmark.cs" />
+    <Compile Include="Benchmarks\QuadTree\SingleClosestBenchmark.cs" />
+    <Compile Include="Benchmarks\QuadTree\UpdateBenchmark.cs" />
     <Compile Include="IBenchmark.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -165,6 +165,9 @@
       <Project>{E7B063F4-0385-4643-ADCC-FB6471803644}</Project>
       <Name>QuadTree</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Benchmarks\BucketGrid\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

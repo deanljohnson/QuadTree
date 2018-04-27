@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
+using QuadTree;
 using SFML.Graphics;
 using SFML.System;
-using QuadTree;
 
-namespace QuadTreeBenchmark.Benchmarks
+namespace QuadTreeBenchmark.Benchmarks.QuadTree
 {
     public class SingleClosestBenchmark : IBenchmark
     {
