@@ -7,7 +7,7 @@ using SFML.System;
 
 namespace QuadTreeBenchmark.Benchmarks.QuadTree
 {
-    public class KClosestBenchmark : IBenchmark
+    public class KClosestBenchmark : IBenchmark<QuadTree<TestObject>>
     {
         private List<TestObject> m_Objects;
         private QuadTree<TestObject> m_Tree;
