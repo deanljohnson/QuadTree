@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using PriorityQueue;
+using Priority_Queue;
 using SFML.Graphics;
 using SFML.System;
 
@@ -11,7 +11,6 @@ namespace QuadTree
         where T : Transformable
     {
         private readonly List<T> CachedList = new List<T>(); 
-        private readonly MaxPriorityQueue<T> CachedQueue = new MaxPriorityQueue<T>();
         private readonly float m_BucketWidth;
         private readonly float m_BucketHeight;
         private readonly int m_NumBucketsWidth;
@@ -135,9 +134,9 @@ namespace QuadTree
             if (range < 0f)
                 throw new ArgumentException("Range cannot be negative");
 #endif
-            CachedQueue.Clear();
-            KNearestNeighborSearch(pos, k, range, CachedQueue);
-            return CachedQueue.ToArray();
+            FastPriorityQueue<ItemNode<T>> pq = new FastPriorityQueue<ItemNode<T>>((int) k);
+            KNearestNeighborSearch(pos, k, range, pq);
+            return pq.Select(node => node.Item).ToArray();
         }
 
         /// <summary>
@@ -189,7 +188,7 @@ namespace QuadTree
         /// This version of the query is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<T> results)
+        public void GetKClosestObjects(Vector2f pos, uint k, float range, FastPriorityQueue<ItemNode<T>> results)
         {
 #if DEBUG
             if (range < 0f)
@@ -311,7 +310,7 @@ namespace QuadTree
             }
         }
 
-        private void KNearestNeighborSearch(Vector2f pos, uint k, float range, PriorityQueue<T> results)
+        private void KNearestNeighborSearch(Vector2f pos, uint k, float range, FastPriorityQueue<ItemNode<T>> results)
         {
             var idx = FindBucketIndex(pos);
 
@@ -343,15 +342,15 @@ namespace QuadTree
 
                         if (results.Count < k)
                         {
-                            results.Enqueue(bucket[n], ds);
+                            results.Enqueue(new ItemNode<T>(bucket[n]), ds);
                             continue;
                         }
 
-                        if (ds < results.GetPriority(results.Peek()))
+                        if (ds < results.First.Priority)
                         {
                             results.Dequeue();
-                            results.Enqueue(bucket[n], ds);
-                            range = (float)Math.Sqrt(results.GetPriority(results.Peek()));
+                            results.Enqueue(new ItemNode<T>(bucket[n]), ds);
+                            range = (float)Math.Sqrt(results.First.Priority);
                         }
                     }
 

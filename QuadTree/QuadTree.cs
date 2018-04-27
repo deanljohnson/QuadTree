@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using PriorityQueue;
+using Priority_Queue;
 using SFML.Graphics;
 using SFML.System;
 
@@ -13,7 +13,6 @@ namespace QuadTree
     {
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
         // Note that these are not used in function chains claiming to be thread safe
-        private static readonly PriorityQueue<T> CachedSortList = new MaxPriorityQueue<T>();
         private static readonly List<T> CachedList = new List<T>();
 
         private readonly Queue<T> m_PendingInsertion;
@@ -132,10 +131,10 @@ namespace QuadTree
             if (range < 0f)
                 throw new ArgumentException("Range cannot be negative");
 #endif
-            CachedSortList.Clear();
+            FastPriorityQueue<ItemNode<T>> pq = new FastPriorityQueue<ItemNode<T>>((int) k);
             float r = range * range;
-            KNearestNeighborSearch(pos, k, ref r, CachedSortList);
-            return CachedSortList.ToArray();
+            KNearestNeighborSearch(pos, k, ref r, pq);
+            return pq.Select(node => node.Item).ToArray();
         }
 
         /// <summary>
@@ -190,7 +189,7 @@ namespace QuadTree
         /// This version of the query is thread safe as long as
         /// <see cref="Update"/> does not execute during the queery.
         /// </summary>
-        public void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<T> results)
+        public void GetKClosestObjects(Vector2f pos, uint k, float range, FastPriorityQueue<ItemNode<T>> results)
         {
 #if DEBUG
             if (range < 0f)
@@ -277,7 +276,7 @@ namespace QuadTree
             return closest;
         }
 
-        private void KNearestNeighborSearch(Vector2f pos, uint k, ref float rangeSquared, PriorityQueue<T> results)
+        private void KNearestNeighborSearch(Vector2f pos, uint k, ref float rangeSquared, FastPriorityQueue<ItemNode<T>> results)
         {
             //We have no children, check objects in this node
             if (m_Leaf)
@@ -294,15 +293,15 @@ namespace QuadTree
                     //If results list has empty elements
                     if (results.Count < k)
                     {
-                        results.Enqueue(obj, ds);
+                        results.Enqueue(new ItemNode<T>(obj), ds);
                         continue;
                     }
 
-                    if (ds < results.GetPriority(results.Peek()))
+                    if (ds < results.First.Priority)
                     {
                         results.Dequeue();
-                        results.Enqueue(obj, ds);
-                        rangeSquared = (float)results.GetPriority(results.Peek());
+                        results.Enqueue(new ItemNode<T>(obj), ds);
+                        rangeSquared = results.First.Priority;
                     }
                 }
                 return;

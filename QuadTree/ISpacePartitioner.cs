@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using Priority_Queue;
 using SFML.Graphics;
 using SFML.System;
-using PriorityQueue;
 
 namespace QuadTree
 {
@@ -19,7 +19,7 @@ namespace QuadTree
         T[] GetObjectsInRange(Vector2f pos, float range = float.MaxValue);
         T[] GetObjectsInRect(FloatRect rect);
 
-        void GetKClosestObjects(Vector2f pos, uint k, float range, PriorityQueue<T> results);
+        void GetKClosestObjects(Vector2f pos, uint k, float range, FastPriorityQueue<ItemNode<T>> results);
         void GetObjectsInRange(Vector2f pos, float range, IList<T> results);
         void GetObjectsInRect(FloatRect rect, IList<T> results);
     }
