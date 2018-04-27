@@ -31,6 +31,7 @@ namespace QuadTree
             get { return m_Buckets.Where(c => c != null).Sum(c => c.Count); }
         }
 
+        // TODO: uint param type
         public BucketGrid(FloatRect region, int numBucketsWidth, int numBucketsHeight)
         {
             m_Region = region;

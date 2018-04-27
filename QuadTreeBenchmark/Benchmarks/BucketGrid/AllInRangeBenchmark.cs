@@ -5,18 +5,21 @@ using QuadTree;
 using SFML.Graphics;
 using SFML.System;
 
-namespace QuadTreeBenchmark.Benchmarks.QuadTree
+namespace QuadTreeBenchmark.Benchmarks.BucketGrid
 {
-    public class AllInRangeBenchmark : IBenchmark<QuadTree<TestObject>>
+    public class AllInRangeBenchmark : IBenchmark<BucketGrid<TestObject>>
     {
         private List<TestObject> m_Objects;
-        private QuadTree<TestObject> m_Tree;
+        private BucketGrid<TestObject> m_Grid;
         private readonly Random m_Random;
 
-        public string Name => "AllInRange-QT";
+        public string Name => "AllInRange-BG";
 
         [Params(100, 1000, 10000)]
         public int NumObjects;
+
+        [Params(100, 1000)]
+        public int NumBuckets;
 
         public AllInRangeBenchmark()
         {
@@ -26,23 +29,23 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
         [GlobalSetup]
         public void Setup()
         {
-            m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100));
+            m_Grid = new BucketGrid<TestObject>(new FloatRect(0, 0, 100, 100), (int) Math.Sqrt(NumBuckets), (int)Math.Sqrt(NumBuckets));
             m_Objects = new List<TestObject>(NumObjects);
 
             for (int i = 0; i < NumObjects; i++)
             {
                 var obj = new TestObject(RandomPosition());
                 m_Objects.Add(obj);
-                m_Tree.Add(obj);
+                m_Grid.Add(obj);
             }
 
-            m_Tree.Update();
+            m_Grid.Update();
         }
 
         [Benchmark]
-        public void AllInRangeQT()
+        public void AllInRangeBG()
         {
-            m_Tree.GetObjectsInRange(RandomPosition(), (float)(m_Random.NextDouble() * 100));
+            m_Grid.GetObjectsInRange(RandomPosition(), (float)(m_Random.NextDouble() * 100));
         }
 
         private Vector2f RandomPosition()

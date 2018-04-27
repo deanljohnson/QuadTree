@@ -5,18 +5,21 @@ using QuadTree;
 using SFML.Graphics;
 using SFML.System;
 
-namespace QuadTreeBenchmark.Benchmarks.QuadTree
+namespace QuadTreeBenchmark.Benchmarks.BucketGrid
 {
-    public class UpdateBenchmark : IBenchmark<QuadTree<TestObject>>
+    public class UpdateBenchmark : IBenchmark<BucketGrid<TestObject>>
     {
         private List<TestObject> m_Objects;
-        private QuadTree<TestObject> m_Tree;
+        private BucketGrid<TestObject> m_Tree;
         private readonly Random m_Random;
+
+        public string Name => "Update-BG";
 
         [Params(100,1000,10000)]
         public int N;
 
-        public string Name => "Update-QT";
+        [Params(100, 1000)]
+        public int NumBuckets;
 
         public UpdateBenchmark()
         {
@@ -26,7 +29,7 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
         [GlobalSetup]
         public void Setup()
         {
-            m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100));
+            m_Tree = new BucketGrid<TestObject>(new FloatRect(0, 0, 100, 100), (int)Math.Sqrt(NumBuckets), (int)Math.Sqrt(NumBuckets));
             m_Objects = new List<TestObject>(N);
 
             for (int i = 0; i < N; i++)
@@ -38,7 +41,7 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
         }
 
         [Benchmark]
-        public void RandomizingPositionsQT()
+        public void RandomizingPositionsBG()
         {
             for (int i = 0; i < N; i++)
             {
@@ -49,13 +52,7 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
         }
 
         [Benchmark]
-        public void RebuildQT()
-        {
-            m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100), m_Objects);
-        }
-
-        [Benchmark]
-        public void AddDeleteQT()
+        public void AddDeleteBG()
         {
             var obj = m_Objects[m_Random.Next(0, m_Objects.Count)];
 

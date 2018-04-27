@@ -13,7 +13,7 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
         private QuadTree<TestObject> m_Tree;
         private readonly Random m_Random;
 
-        public string Name => "SingleClosest";
+        public string Name => "SingleClosest-QT";
 
         [Params(100, 1000, 10000)]
         public int NumObjects;
@@ -40,7 +40,7 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
         }
 
         [Benchmark]
-        public void ClosestQuad()
+        public void SingleClosestQT()
         {
             m_Tree.GetClosestObject(RandomPosition(), (float) (m_Random.NextDouble() * 100));
         }
