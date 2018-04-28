@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Priority_Queue;
@@ -11,6 +10,11 @@ namespace QuadTree
     public class QuadTree<T> : ISpacePartitioner<T>, IEnumerable<T>
         where T : Transformable
     {
+        private const int NORTH_WEST = 0;
+        private const int NORTH_EAST = 1;
+        private const int SOUTH_WEST = 2;
+        private const int SOUTH_EAST = 3;
+
         // To avoid memory allocation, we define statics collection to be re-used for scratch work
         // Note that these are not used in function chains claiming to be thread safe
         private static readonly List<T> CachedList = new List<T>();
@@ -266,21 +270,50 @@ namespace QuadTree
             }
             else
             {
-                if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                // Search in order of closeness to the given position
+                int quad = GetQuadrant(pos);
+                switch (quad)
                 {
-                    m_NorthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
-                }
-                if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
-                {
-                    m_SouthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
-                }
-                if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
-                {
-                    m_NorthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
-                }
-                if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
-                {
-                    m_SouthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                    case NORTH_WEST:
+                        if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        break;
+                    case NORTH_EAST:
+                        if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthEast.NearestNeighborSearch(pos ,ref distanceSquared, ref closest);
+                        if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        break;
+                    case SOUTH_WEST:
+                        if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        break;
+                    case SOUTH_EAST:
+                        if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_SouthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                            m_NorthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                        break;
                 }
             }
         }
@@ -315,21 +348,50 @@ namespace QuadTree
                 return;
             }
 
-            if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+            // Search in order of closeness to the given position
+            int quad = GetQuadrant(pos);
+            switch (quad)
             {
-                m_NorthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
-            }
-            if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
-            {
-                m_SouthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
-            }
-            if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
-            {
-                m_NorthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
-            }
-            if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
-            {
-                m_SouthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                case NORTH_WEST:
+                    if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    break;
+                case NORTH_EAST:
+                    if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    break;
+                case SOUTH_WEST:
+                    if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    break;
+                case SOUTH_EAST:
+                    if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_SouthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                        m_NorthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+                    break;
             }
         }
 
@@ -643,6 +705,22 @@ namespace QuadTree
             }
 
             m_Leaf = !anyChildrenAlive;
+        }
+
+        private int GetQuadrant(Vector2f pos)
+        {
+            if (pos.X < m_Region.Left + (m_Region.Width / 2))
+            {
+                return pos.Y < m_Region.Top + (m_Region.Height / 2) 
+                    ? NORTH_WEST
+                    : SOUTH_WEST;
+            }
+            else
+            {
+                return pos.Y < m_Region.Top + (m_Region.Height / 2) 
+                    ? NORTH_EAST
+                    : SOUTH_EAST;
+            }
         }
 
         /// <summary>
