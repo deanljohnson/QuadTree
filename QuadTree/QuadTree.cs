@@ -106,8 +106,8 @@ namespace QuadTree
         /// </summary>
         public void Update()
         {
-            List<T> removed = new List<T>();
-            CorrectTree(removed);
+            CachedList.Clear();
+            CorrectTree(CachedList);
 
 #if DEBUG
             if (removed.Count > 0)
