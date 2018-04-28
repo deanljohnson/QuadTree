@@ -15,6 +15,7 @@ namespace QuadTreeTest
         {
             TestObject one = new TestObject();
             TestObject two = new TestObject();
+            Random random = new Random();
 
             Assert.AreEqual(partitioner.Count, 0);
             partitioner.Update();
@@ -60,6 +61,15 @@ namespace QuadTreeTest
             partitioner.Remove(two); // Not in partitioner
             partitioner.Update();
             Assert.AreEqual(partitioner.Count, 1);
+            partitioner.Remove(one);
+
+            for (int i = 0; i < 100; i++)
+            {
+                partitioner.Add(new TestObject((float) (random.NextDouble() * 100), (float) (random.NextDouble() * 100)));
+            }
+            partitioner.Update();
+            Assert.AreEqual(100, partitioner.Count);
+
 
 #if DEBUG
             AssertThrows<ArgumentException>(() => partitioner.Add(null));

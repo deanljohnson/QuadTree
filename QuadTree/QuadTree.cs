@@ -48,11 +48,7 @@ namespace QuadTree
         /// </summary>
         public static int NumObjects = 1;
 
-        public int Count => m_Count
-                            + (m_NorthWest?.Count ?? 0)
-                            + (m_NorthEast?.Count ?? 0)
-                            + (m_SouthWest?.Count ?? 0)
-                            + (m_SouthEast?.Count ?? 0);
+        public int Count => m_Count;
 
         private QuadTree(FloatRect bounds, T obj)
         {
@@ -563,6 +559,7 @@ namespace QuadTree
                     }
                     else
                         m_NorthWest.Insert(obj);
+                    m_Count++;
                 }
                 else
                 {
@@ -576,6 +573,7 @@ namespace QuadTree
                     }
                     else
                         m_SouthWest.Insert(obj);
+                    m_Count++;
                 }
             }
             else
@@ -592,6 +590,7 @@ namespace QuadTree
                     }
                     else
                         m_NorthEast.Insert(obj);
+                    m_Count++;
                 }
                 else
                 {
@@ -605,6 +604,7 @@ namespace QuadTree
                     }
                     else
                         m_SouthEast.Insert(obj);
+                    m_Count++;
                 }
             }
         }
@@ -631,10 +631,12 @@ namespace QuadTree
                 if (obj.Position.Y < m_Region.Top + (m_Region.Height / 2))
                 {
                     m_NorthWest.Delete(obj);
+                    m_Count--;
                 }
                 else
                 {
                     m_SouthWest.Delete(obj);
+                    m_Count--;
                 }
             }
             else
@@ -642,10 +644,12 @@ namespace QuadTree
                 if (obj.Position.Y < m_Region.Top + (m_Region.Height / 2))
                 {
                     m_NorthEast.Delete(obj);
+                    m_Count--;
                 }
                 else
                 {
                     m_SouthEast.Delete(obj);
+                    m_Count--;
                 }
             }
         }
