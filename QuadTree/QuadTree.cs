@@ -20,9 +20,15 @@ namespace QuadTree
 
         private FloatRect m_Region;
         private readonly List<T> m_Objects;
-        private readonly QuadTree<T>[] m_ChildNodes = new QuadTree<T>[4];
+
+        private QuadTree<T> m_NorthWest;
+        private QuadTree<T> m_NorthEast;
+        private QuadTree<T> m_SouthWest;
+        private QuadTree<T> m_SouthEast;
 
         private bool m_Leaf = true;
+
+        private int m_Count;
 
         /// <summary>
         /// The minimum size of a leaf QuadTree.
@@ -38,62 +44,31 @@ namespace QuadTree
         /// </summary>
         public static int NumObjects = 1;
 
-        /// <summary>
-        /// The number of objects contained in the <see cref="QuadTree{T}"/>
-        /// </summary>
-        public int Count
+        public int Count => m_Count
+                            + (m_NorthWest?.Count ?? 0)
+                            + (m_NorthEast?.Count ?? 0)
+                            + (m_SouthWest?.Count ?? 0)
+                            + (m_SouthEast?.Count ?? 0);
+
+        private QuadTree(FloatRect bounds, T obj)
         {
-            get { return m_Objects.Count + m_ChildNodes.Where(c => c != null).Sum(c => c.Count); }
+            m_Region = bounds;
+            m_Objects = new List<T>(NumObjects) { obj };
+            m_Count = 1;
+        }
+
+        public QuadTree(FloatRect bounds)
+        {
+            m_PendingInsertion = new Queue<T>();
+            m_PendingRemoval = new Queue<T>();
+
+            m_Region = bounds;
+            m_Objects = new List<T>(NumObjects);
         }
 
         /// <summary>
-        /// The bounds of the <see cref="QuadTree{T}"/>
-        /// </summary>
-        public FloatRect Bounds => m_Region;
-
-        private QuadTree(FloatRect region, List<T> objects, QuadTree<T> parent)
-        {
-            if (region.Width != region.Height)
-                throw new ArgumentException("QuadTree height must equal QuadTree width");
-            if (objects == null)
-                throw new NullReferenceException("Cannot have a null list of objects");
-
-            m_Region = region;
-            m_Objects = objects;
-
-            //If we are a child, we wont need these allocations
-            if (parent == null)
-            {
-                m_PendingInsertion = new Queue<T>();
-                m_PendingRemoval = new Queue<T>();
-            }
-
-            BuildTree();
-        }
-
-        public QuadTree(FloatRect region, List<T> objects)
-            : this(region, objects, null)
-        {
-        }
-
-        public QuadTree(FloatRect region)
-            : this(region, new List<T>(), null)
-        {
-        }
-
-        /// <summary>
-        /// Updates the <see cref="QuadTree{T}"/> by adding and/or
-        /// removing any items passed to <see cref="Add"/> or <see cref="Remove"/>
-        /// and by updating the tree to take into account objects that have moved
-        /// </summary>
-        public void Update()
-        {
-            Insert(InternalUpdate());
-        }
-
-        /// <summary>
-        /// Adds the given <see cref="Transformable"/> to the QuadTree.
-        /// Internal QuadTree is not updated until the next call to Update.
+        /// Adds the given <see cref="Transformable"/> to the <see cref="QuadTree{T}"/>.
+        /// The <see cref="QuadTree{T}"/> is not updated until the next call to <see cref="Update"/>.
         /// </summary>
         public void Add(T t)
         {
@@ -101,22 +76,57 @@ namespace QuadTree
             if (t == null)
                 throw new ArgumentException("Cannot add a null object to the QuadTree");
 #endif
+
             lock (m_PendingInsertion)
                 m_PendingInsertion.Enqueue(t);
         }
 
         /// <summary>
-        /// Removes the given <see cref="Transformable"/> from the QuadTree.
-        /// Internal QuadTree is not updated until the next call to Update.
+        /// Removes the given <see cref="Transformable"/> from the <see cref="QuadTree{T}"/>.
+        /// The <see cref="QuadTree{T}"/> is not updated until the next call to <see cref="Update"/>.
         /// </summary>
         public void Remove(T t)
         {
 #if DEBUG
             if (t == null)
-                throw new ArgumentException("Cannot remove a null object from the QuadTree");
+                throw new ArgumentException("Cannot remove a null object to the QuadTree");
 #endif
             lock (m_PendingRemoval)
                 m_PendingRemoval.Enqueue(t);
+        }
+
+        /// <summary>
+        /// Updates the <see cref="QuadTree{T}"/> by adding and/or
+        /// removing any items passed to <see cref="Add"/> or <see cref="Remove"/>
+        /// and by correcting the tree for objects that have moved
+        /// </summary>
+        public void Update()
+        {
+            List<T> removed = new List<T>();
+            CorrectTree(removed);
+
+#if DEBUG
+            if (removed.Count > 0)
+                throw new InvalidOperationException("An object has moved out of the tree completely");
+#endif
+
+            lock (m_PendingRemoval)
+            {
+                while (m_PendingRemoval.Count > 0)
+                {
+                    Delete(m_PendingRemoval.Dequeue());
+                }
+            }
+
+            lock (m_PendingInsertion)
+            {
+                while (m_PendingInsertion.Count > 0)
+                {
+                    Insert(m_PendingInsertion.Dequeue());
+                }
+            }
+
+            Prune();
         }
 
         #region Non-Thread-Safe Queries
@@ -131,7 +141,7 @@ namespace QuadTree
             if (range < 0f)
                 throw new ArgumentException("Range cannot be negative");
 #endif
-            FastPriorityQueue<ItemNode<T>> pq = new FastPriorityQueue<ItemNode<T>>((int) k);
+            FastPriorityQueue<ItemNode<T>> pq = new FastPriorityQueue<ItemNode<T>>((int)k);
             float r = range * range;
             KNearestNeighborSearch(pos, k, ref r, pq);
             return pq.Select(node => node.Item).ToArray();
@@ -180,8 +190,10 @@ namespace QuadTree
             if (maxDistance < 0f)
                 throw new ArgumentException("Range cannot be negative");
 #endif
-            float maxRef = maxDistance * maxDistance;
-            return NearestNeighborSearch(pos, ref maxRef);
+            T result = null;
+            float distanceSquared = maxDistance * maxDistance;
+            NearestNeighborSearch(pos, ref distanceSquared, ref result);
+            return result;
         }
 
         /// <summary>
@@ -233,19 +245,17 @@ namespace QuadTree
 
         #endregion
 
-        #region Internal Queeries
-        private T NearestNeighborSearch(Vector2f pos, ref float distanceSquared)
-        {
-            T closest = null;
+        #region Internal Queries
 
-            //We have no children, check objects in this node
+        private void NearestNeighborSearch(Vector2f pos, ref float distanceSquared, ref T closest)
+        {
             if (m_Leaf)
             {
-                for (var i = 0; i < m_Objects.Count; i++)
+                for (int i = 0; i < m_Objects.Count; i++)
                 {
-                    var obj = m_Objects[i];
+                    T obj = m_Objects[i];
 
-                    var ds = (pos - obj.Position).SquaredLength();
+                    float ds = (pos - obj.Position).SquaredLength();
 
                     if (ds > distanceSquared)
                         continue;
@@ -253,41 +263,39 @@ namespace QuadTree
                     distanceSquared = ds;
                     closest = obj;
                 }
-                return closest;
             }
-
-            for (var i = 0; i < 4; i++)
+            else
             {
-                if (m_ChildNodes[i] == null)
-                    continue;
-
-                //If a border is closer than the closest distance so far, it might have a closer object
-                var distToChildBorder = m_ChildNodes[i].m_Region.SquaredDistance(pos);
-
-                if (distToChildBorder > distanceSquared)
-                    continue;
-
-                var testObject = m_ChildNodes[i].NearestNeighborSearch(pos, ref distanceSquared);
-                if (testObject == null) continue; //Didn't find a closer object
-
-                closest = testObject;
+                if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                {
+                    m_NorthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                }
+                if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                {
+                    m_SouthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                }
+                if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+                {
+                    m_NorthEast.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                }
+                if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+                {
+                    m_SouthWest.NearestNeighborSearch(pos, ref distanceSquared, ref closest);
+                }
             }
-
-            return closest;
         }
 
-        private void KNearestNeighborSearch(Vector2f pos, uint k, ref float rangeSquared, FastPriorityQueue<ItemNode<T>> results)
+        private void KNearestNeighborSearch(Vector2f pos, uint k, ref float distanceSquared, FastPriorityQueue<ItemNode<T>> results)
         {
-            //We have no children, check objects in this node
             if (m_Leaf)
             {
-                for (var i = 0; i < m_Objects.Count; i++)
+                for (int i = 0; i < m_Objects.Count; i++)
                 {
-                    var obj = m_Objects[i];
+                    T obj = m_Objects[i];
 
-                    var ds = (pos - obj.Position).SquaredLength();
+                    float ds = (pos - obj.Position).SquaredLength();
 
-                    if (ds > rangeSquared)
+                    if (ds > distanceSquared)
                         continue;
 
                     //If results list has empty elements
@@ -301,40 +309,41 @@ namespace QuadTree
                     {
                         results.Dequeue();
                         results.Enqueue(new ItemNode<T>(obj), -ds);
-                        rangeSquared = -results.First.Priority;
+                        distanceSquared = -results.First.Priority;
                     }
                 }
                 return;
             }
 
-            //Check if we should check children
-            for (var i = 0; i < 4; i++)
+            if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
             {
-                if (m_ChildNodes[i] == null)
-                    continue;
-
-                //If a border is closer than the farthest distance so far, it might have a closer object
-                var distToChildBorder = m_ChildNodes[i].m_Region.SquaredDistance(pos);
-
-                if (distToChildBorder > rangeSquared)
-                    continue;
-
-                m_ChildNodes[i].KNearestNeighborSearch(pos, k, ref rangeSquared, results);
+                m_NorthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+            }
+            if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+            {
+                m_SouthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+            }
+            if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+            {
+                m_NorthEast.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
+            }
+            if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+            {
+                m_SouthWest.KNearestNeighborSearch(pos, k, ref distanceSquared, results);
             }
         }
 
-        private void AllNearestNeighborsSearch(Vector2f pos, float rangeSquared, IList<T> results)
+        private void AllNearestNeighborsSearch(Vector2f pos, float distanceSquared, IList<T> results)
         {
-            //We have no children, check objects in this node
             if (m_Leaf)
             {
-                for (var i = 0; i < m_Objects.Count; i++)
+                for (int i = 0; i < m_Objects.Count; i++)
                 {
-                    var obj = m_Objects[i];
+                    T obj = m_Objects[i];
 
-                    var ds = (pos - obj.Position).SquaredLength();
+                    float ds = (pos - obj.Position).SquaredLength();
 
-                    if (ds > rangeSquared)
+                    if (ds > distanceSquared)
                         continue;
 
                     results.Add(obj);
@@ -342,19 +351,21 @@ namespace QuadTree
                 return;
             }
 
-            //Check if we should check children
-            for (var i = 0; i < 4; i++)
+            if (m_NorthWest != null && m_NorthWest.m_Region.SquaredDistance(pos) < distanceSquared)
             {
-                if (m_ChildNodes[i] == null)
-                    continue;
-
-                //If a border is closer than the farthest distance so far, it might have a closer object
-                var distToChildBorder = m_ChildNodes[i].m_Region.SquaredDistance(pos);
-
-                if (distToChildBorder > rangeSquared)
-                    continue;
-
-                m_ChildNodes[i].AllNearestNeighborsSearch(pos, rangeSquared, results);
+                m_NorthWest.AllNearestNeighborsSearch(pos, distanceSquared, results);
+            }
+            if (m_SouthEast != null && m_SouthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+            {
+                m_SouthEast.AllNearestNeighborsSearch(pos, distanceSquared, results);
+            }
+            if (m_NorthEast != null && m_NorthEast.m_Region.SquaredDistance(pos) < distanceSquared)
+            {
+                m_NorthEast.AllNearestNeighborsSearch(pos, distanceSquared, results);
+            }
+            if (m_SouthWest != null && m_SouthWest.m_Region.SquaredDistance(pos) < distanceSquared)
+            {
+                m_SouthWest.AllNearestNeighborsSearch(pos, distanceSquared, results);
             }
         }
 
@@ -362,9 +373,9 @@ namespace QuadTree
         {
             if (m_Leaf)
             {
-                for (var i = 0; i < m_Objects.Count; i++)
+                for (int i = 0; i < m_Objects.Count; i++)
                 {
-                    var obj = m_Objects[i];
+                    T obj = m_Objects[i];
 
                     if (!rect.Contains(obj.Position.X, obj.Position.Y))
                         return;
@@ -373,227 +384,282 @@ namespace QuadTree
                 }
             }
 
-            //Check if we should check children
-            for (var i = 0; i < 4; i++)
+            if (m_NorthWest != null && m_NorthWest.m_Region.Intersects(rect))
             {
-                if (m_ChildNodes[i] == null)
-                    continue;
-
-                if (m_ChildNodes[i].m_Region.Intersects(rect))
-                    m_ChildNodes[i].ObjectsInRectSearch(rect, results);
+                m_NorthWest.ObjectsInRectSearch(rect, results);
+            }
+            if (m_SouthEast != null && m_SouthEast.m_Region.Intersects(rect))
+            {
+                m_SouthEast.ObjectsInRectSearch(rect, results);
+            }
+            if (m_NorthEast != null && m_NorthEast.m_Region.Intersects(rect))
+            {
+                m_NorthEast.ObjectsInRectSearch(rect, results);
+            }
+            if (m_SouthWest != null && m_SouthWest.m_Region.Intersects(rect))
+            {
+                m_SouthWest.ObjectsInRectSearch(rect, results);
             }
         }
 
         #endregion
 
-        #region Internal Operations
-        private List<T> InternalUpdate()
+        /// <summary>
+        /// Corrects the tree by verifying that objects are within the correct regions.
+        /// Objects that have moved out of this level of the tree will be added to
+        /// the given <see cref="List{T}"/>.
+        /// </summary>
+        /// <param name="removed">
+        /// A list in which to add objects that have 
+        /// moved out of this level of the tee
+        /// </param>
+        private void CorrectTree(List<T> removed)
         {
-            var objsInserting = new List<T>();
-            var objsMovingUp = new List<T>();
-
-            //Update active branches
-            for (var i = 0; i < 4; i++)
+            // Remove objects from this level that are not in our region
+            if (m_Leaf)
             {
-                if (m_ChildNodes[i] == null)
-                    continue;
-
-                var movedUp = m_ChildNodes[i].InternalUpdate();
-                for (var j = 0; j < movedUp.Count; j++)
+                for (int i = m_Objects.Count - 1; i >= 0; i--)
                 {
-                    if (m_Region.Contains(movedUp[j].Position.X, movedUp[j].Position.Y))
-                    {
-                        objsInserting.Add(movedUp[j]);
-                    }
-                    else
-                    {
-                        objsMovingUp.Add(movedUp[j]);
-                    }
-                }
-            }
-
-            //Move children up to parent if they have moved out of our bounds
-            for (var i = m_Objects.Count - 1; i >= 0; i--)
-            {
-                var obj = m_Objects[i];
-
-                if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
-                {
-                    objsMovingUp.Add(obj);
+                    T obj = m_Objects[i];
+                    if (m_Region.Contains(obj.Position.X, obj.Position.Y))
+                        continue;
+                    removed.Add(obj);
                     m_Objects.RemoveAt(i);
+                    m_Count--;
                 }
             }
-
-            Insert(objsInserting);
-
-            UpdateTree();
-
-            m_Leaf = true;
-            //prune out any dead branches in the tree
-            for (var i = 0; i < 4; i++)
+            // Check children for objects that have moved
+            // out of their regions (and possibly ours)
+            else
             {
-                if (m_ChildNodes[i] != null 
-                    && m_ChildNodes[i].m_Objects.Count == 0 
-                    && m_ChildNodes[i].m_Leaf)
-                {
-                    m_ChildNodes[i] = null;
-                }
-                m_Leaf &= m_ChildNodes[i] == null;
-            }
+                // Reuse the removed list. Anything before this index
+                // is not coming from one of our children
+                int firstChildIndex = removed.Count;
+                m_NorthWest?.CorrectTree(removed);
+                m_NorthEast?.CorrectTree(removed);
+                m_SouthWest?.CorrectTree(removed);
+                m_SouthEast?.CorrectTree(removed);
 
-            return objsMovingUp;
-        }
-
-        private void UpdateTree()
-        {
-            if (m_PendingInsertion != null)
-            {
-                lock (m_PendingInsertion)
+                for (int i = removed.Count - 1; i >= firstChildIndex; i--)
                 {
-                    Insert(m_PendingInsertion);
-                    m_PendingInsertion.Clear();
-                }
-            }
+                    T obj = removed[i];
 
-            if (m_PendingRemoval != null)
-            {
-                lock (m_PendingRemoval)
-                {
-                    while (m_PendingRemoval.Count != 0)
-                    {
-                        Delete(m_PendingRemoval.Dequeue());
-                    }
+                    // Is this object above this level of the tree?
+                    if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
+                        continue;
+
+                    removed.RemoveAt(i);
+                    Insert(obj);
                 }
             }
         }
 
         /// <summary>
-        /// Builds the initial state of a new QuadTree by attempting
-        /// to move children into sub-trees if needed and valid
+        /// Inserts the given object into the tree. Assumes that the given
+        /// object is within the trees <see cref="m_Region"/>.
         /// </summary>
-        private void BuildTree()
+        private void Insert(T obj)
         {
-            if (m_Objects.Count <= NumObjects)
+#if DEBUG
+            if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
+                throw new InvalidOperationException("Insert was called with an object not in the correct region");
+#endif
+            if (!m_Leaf)
             {
-                return; //We are a leaf node - we are done
-            }
-
-            //Smallest we can get, no more subdividing
-            //For a quadTree, all the bounds are squares, so we only 
-            //need to check one axis
-            if (m_Region.Width <= MinSize)
-            {
+                InsertIntoChildren(obj);
                 return;
             }
 
-            MoveObjectsToChildren();
-        }
+            m_Objects.Add(obj);
+            m_Count++;
 
-        private void Insert(IEnumerable<T> objs)
-        {
-            m_Objects.AddRange(objs);
-
-            bool overflow = m_Objects.Count > NumObjects || !m_Leaf;
-
-            //Smallest we can get, no more subdividing
-            //For an quadtree, all the bounds are squares, so we only 
-            //need to check one axis
-            if (overflow && m_Region.Width > MinSize)
+            if (m_Objects.Count > NumObjects)
             {
-                MoveObjectsToChildren();
+                // If this region is large enough to be split
+                if (m_Region.Width > MinSize && m_Region.Height > MinSize)
+                    Split();
             }
         }
 
         /// <summary>
-        /// Attempts to move all objects at this level of the QuadTree into child nodes
+        /// Inserts the given object into the appropriate child node.
+        /// Assumes the given object is within the trees <see cref="m_Region"/>
         /// </summary>
-        private void MoveObjectsToChildren()
+        private void InsertIntoChildren(T obj)
         {
-            var halflen = m_Region.Width / 2f;
-
-            //Create child bounds
-            var quads = new FloatRect[4];
-            quads[0] = new FloatRect(m_Region.Left, m_Region.Top, halflen, halflen);
-            quads[1] = new FloatRect(m_Region.Left + halflen, m_Region.Top, halflen, halflen);
-            quads[2] = new FloatRect(m_Region.Left + halflen, m_Region.Top + halflen, halflen, halflen);
-            quads[3] = new FloatRect(m_Region.Left, m_Region.Top + halflen, halflen, halflen);
-
-            //Objects that go in each octant
-            //Since these lists will be used by the octants
-            //there is no reason to cache them
-            var octList = new List<T>[4];
-            for (var i = 0; i < 4; i++) octList[i] = new List<T>();
-
-            //Move objects into children
-            for (var index = 0; index < m_Objects.Count; index++)
+            if (obj.Position.X < m_Region.Left + (m_Region.Width / 2))
             {
-                var obj = m_Objects[index];
-
-                bool moved = false;
-                for (var i = 0; i < 4; i++)
+                if (obj.Position.Y < m_Region.Top + (m_Region.Height / 2))
                 {
-                    if (quads[i].Contains(obj.Position.X, obj.Position.Y))
+                    if (m_NorthWest == null)
                     {
-                        octList[i].Add(obj);
-                        moved = true;
-                        break;
+                        m_Leaf = false;
+                        m_NorthWest = new QuadTree<T>(
+                            new FloatRect(m_Region.Left, m_Region.Top,
+                                m_Region.Width / 2, m_Region.Height / 2),
+                            obj);
                     }
-                }
-
-                if (!moved)
-                    throw new Exception("Unable to move an object into a child region. Is the object outside the bounds of the QuadTree?");
-            }
-
-            m_Objects.Clear();
-
-            for (var i = 0; i < 4; i++)
-            {
-                // If there are no objects to insert into child
-                if (octList[i].Count == 0)
-                    continue;
-
-                // If the child node does not exist
-                if (m_ChildNodes[i] == null)
-                {
-                    m_Leaf = false;
-                    m_ChildNodes[i] = new QuadTree<T>(quads[i], octList[i], this);
+                    else
+                        m_NorthWest.Insert(obj);
                 }
                 else
                 {
-                    m_ChildNodes[i].Insert(octList[i]);
+                    if (m_SouthWest == null)
+                    {
+                        m_Leaf = false;
+                        m_SouthWest = new QuadTree<T>(
+                            new FloatRect(m_Region.Left, m_Region.Top + m_Region.Height / 2,
+                                m_Region.Width / 2, m_Region.Height / 2),
+                            obj);
+                    }
+                    else
+                        m_SouthWest.Insert(obj);
                 }
             }
-        }
-
-        private bool Delete(T t)
-        {
-            if (!m_Region.Contains(t.Position.X, t.Position.Y))
-                return false;
-
-            if (m_Objects.Count > 0 && m_Objects.Remove(t))
-                return true;
-
-            for (int i = 0; i < m_ChildNodes.Length; i++)
+            else
             {
-                if (m_ChildNodes[i] != null 
-                    && m_ChildNodes[i].Delete(t))
+                if (obj.Position.Y < m_Region.Top + (m_Region.Height / 2))
                 {
-                    return true;
+                    if (m_NorthEast == null)
+                    {
+                        m_Leaf = false;
+                        m_NorthEast = new QuadTree<T>(
+                            new FloatRect(m_Region.Left + m_Region.Width / 2, m_Region.Top,
+                                m_Region.Width / 2, m_Region.Height / 2),
+                            obj);
+                    }
+                    else
+                        m_NorthEast.Insert(obj);
+                }
+                else
+                {
+                    if (m_SouthEast == null)
+                    {
+                        m_Leaf = false;
+                        m_SouthEast = new QuadTree<T>(
+                            new FloatRect(m_Region.Left + m_Region.Width / 2, m_Region.Top + m_Region.Height / 2,
+                                m_Region.Width / 2, m_Region.Height / 2),
+                            obj);
+                    }
+                    else
+                        m_SouthEast.Insert(obj);
                 }
             }
-
-            return false;
         }
 
-        #endregion
+        /// <summary>
+        /// Delets the given object from the tree.
+        /// Assumes the given object is within the trees <see cref="m_Region"/>
+        /// </summary>
+        private void Delete(T obj)
+        {
+#if DEBUG
+            if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
+                throw new InvalidOperationException("Delete was called with an object not in the correct region");
+#endif
+            if (m_Leaf)
+            {
+                if (m_Objects.Remove(obj))
+                    m_Count--;
+                return;
+            }
+
+            if (obj.Position.X < m_Region.Left + (m_Region.Width / 2))
+            {
+                if (obj.Position.Y < m_Region.Top + (m_Region.Height / 2))
+                {
+                    m_NorthWest.Delete(obj);
+                }
+                else
+                {
+                    m_SouthWest.Delete(obj);
+                }
+            }
+            else
+            {
+                if (obj.Position.Y < m_Region.Top + (m_Region.Height / 2))
+                {
+                    m_NorthEast.Delete(obj);
+                }
+                else
+                {
+                    m_SouthEast.Delete(obj);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Splits this level of the tree by inserting objects into lower levels
+        /// </summary>
+        private void Split()
+        {
+            for (int i = 0; i < m_Objects.Count; i++)
+            {
+                InsertIntoChildren(m_Objects[i]);
+            }
+            m_Count -= m_Objects.Count;
+            m_Objects.Clear();
+        }
+
+        /// <summary>
+        /// Prunes the tree by deleting empty leaf nodes
+        /// </summary>
+        private void Prune()
+        {
+            if (m_Leaf) return;
+
+            bool anyChildrenAlive = false;
+            if (m_NorthWest != null)
+            {
+                m_NorthWest.Prune();
+                if (m_NorthWest.IsStale())
+                    m_NorthWest = null;
+                else
+                    anyChildrenAlive = true;
+            }
+            if (m_NorthEast != null)
+            {
+                m_NorthEast.Prune();
+                if (m_NorthEast.IsStale())
+                    m_NorthEast = null;
+                else
+                    anyChildrenAlive = true;
+            }
+            if (m_SouthWest != null)
+            {
+                m_SouthWest.Prune();
+                if (m_SouthWest.IsStale())
+                    m_SouthWest = null;
+                else
+                    anyChildrenAlive = true;
+            }
+            if (m_SouthEast != null)
+            {
+                m_SouthEast.Prune();
+                if (m_SouthEast.IsStale())
+                    m_SouthEast = null;
+                else
+                    anyChildrenAlive = true;
+            }
+
+            m_Leaf = !anyChildrenAlive;
+        }
+
+        /// <summary>
+        /// Returns whether or not the tree is a leaf node with no children
+        /// </summary>
+        private bool IsStale()
+        {
+            return m_Leaf && m_Objects.Count == 0;
+        }
 
         public void GetAllRegions(List<FloatRect> regions)
         {
             regions.Add(m_Region);
-            foreach (var childNode in m_ChildNodes)
-            {
-                childNode?.GetAllRegions(regions);
-            }
+            m_NorthWest?.GetAllRegions(regions);
+            m_NorthEast?.GetAllRegions(regions);
+            m_SouthWest?.GetAllRegions(regions);
+            m_SouthEast?.GetAllRegions(regions);
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -603,11 +669,24 @@ namespace QuadTree
                 foreach (T obj in m_Objects)
                     yield return obj;
             }
-            for (int i = 0; i < 4; i++)
+            if (m_NorthWest != null)
             {
-                if (m_ChildNodes[i] == null)
-                    continue;
-                foreach (T obj in m_ChildNodes[i])
+                foreach (T obj in m_NorthWest)
+                    yield return obj;
+            }
+            if (m_NorthEast != null)
+            {
+                foreach (T obj in m_NorthEast)
+                    yield return obj;
+            }
+            if (m_SouthWest != null)
+            {
+                foreach (T obj in m_SouthWest)
+                    yield return obj;
+            }
+            if (m_SouthEast != null)
+            {
+                foreach (T obj in m_SouthEast)
                     yield return obj;
             }
         }

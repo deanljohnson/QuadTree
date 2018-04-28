@@ -49,12 +49,6 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
         }
 
         [Benchmark]
-        public void RebuildQT()
-        {
-            m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100), m_Objects);
-        }
-
-        [Benchmark]
         public void AddDeleteQT()
         {
             var obj = m_Objects[m_Random.Next(0, m_Objects.Count)];

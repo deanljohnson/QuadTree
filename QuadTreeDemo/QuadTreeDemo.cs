@@ -55,7 +55,11 @@ namespace QuadTreeDemo
             m_MainTestObject = m_TestObjects.First().Key;
             m_MainTestObject.Position = m_Bounds.Center();
 
-            m_Tree = new QuadTree<Transformable>(m_Bounds, m_TestObjects.Select(kvp => kvp.Key).Cast<Transformable>().ToList());
+            m_Tree = new QuadTree<Transformable>(m_Bounds);
+            foreach (var obj in m_TestObjects.Select(kvp => kvp.Key).Cast<Transformable>().ToList())
+            {
+                m_Tree.Add(obj);
+            }
 
             Game.Window.KeyPressed += (sender, args) =>
             {

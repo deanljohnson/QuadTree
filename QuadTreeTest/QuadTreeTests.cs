@@ -14,22 +14,6 @@ namespace QuadTreeTest
         private readonly FloatRect m_Bounds = new FloatRect(0,0,1000,1000);
 
         [TestMethod]
-        public void ConstructorTests()
-        {
-            QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
-            Assert.AreEqual(tree.Count, 0);
-
-            QuadTree<TestObject> tree2 = new QuadTree<TestObject>(m_Bounds, 
-                new List<TestObject> {new TestObject(), new TestObject()});
-            Assert.AreEqual(tree2.Count, 2);
-
-            AssertThrows<NullReferenceException>(() => new QuadTree<TestObject>(m_Bounds, null));
-
-            FloatRect nonSquareBounds = new FloatRect(0,0,5,10);
-            AssertThrows<ArgumentException>(() => new QuadTree<TestObject>(nonSquareBounds));
-        }
-
-        [TestMethod]
         public void AddRemoveTest()
         {
             QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
