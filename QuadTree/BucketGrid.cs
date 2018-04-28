@@ -323,7 +323,6 @@ namespace QuadTree
             {
                 int dx = Math.Min(d, bucketRangeX);
                 int dy = Math.Min(d, bucketRangeY);
-
                 foreach (int nextIdx in BucketsAtRange(idx, dx, dy))
                 {
                     // If index is out of range
@@ -406,7 +405,7 @@ namespace QuadTree
             // Top row
             for (int i = -dx; i <= dx; i++)
             {
-                yield return center + (dx - (dy * m_NumBucketsWidth));
+                yield return center + (i - (dy * m_NumBucketsWidth));
             }
 
             // Bottom row
@@ -414,7 +413,7 @@ namespace QuadTree
             {
                 for (int i = -dx; i <= dx; i++)
                 {
-                    yield return center + (dx + (dy * m_NumBucketsWidth));
+                    yield return center + (i + (dy * m_NumBucketsWidth));
                 }
             }
 
@@ -423,7 +422,7 @@ namespace QuadTree
             {
                 if (dx == 0 && j == 0)
                     continue;
-                yield return center + (-dx + (dy * m_NumBucketsWidth));
+                yield return center + (-dx + (j * m_NumBucketsWidth));
             }
 
             // right column
@@ -433,7 +432,7 @@ namespace QuadTree
                 {
                     if (dx == 0 && j == 0)
                         continue;
-                    yield return center + (dx + (dy * m_NumBucketsWidth));
+                    yield return center + (dx + (j * m_NumBucketsWidth));
                 }
             }
         }
