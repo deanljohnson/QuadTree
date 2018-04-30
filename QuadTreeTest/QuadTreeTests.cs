@@ -14,6 +14,37 @@ namespace QuadTreeTest
         private readonly FloatRect m_Bounds = new FloatRect(0,0,1000,1000);
 
         [TestMethod]
+        public void BulkCreationTest()
+        {
+            QuadTree<TestObject> individualTree = new QuadTree<TestObject>(m_Bounds);
+            QuadTree<TestObject> bulkTree = new QuadTree<TestObject>(m_Bounds);
+
+            Random random = new Random(0);
+            List<TestObject> objects = new List<TestObject>();
+            for (int i = 0; i < 500; i++)
+            {
+                objects.Add(new TestObject(
+                    new Vector2f((float) random.NextDouble(), (float) random.NextDouble()) * 1000));
+                individualTree.Add(objects[objects.Count - 1]);
+                bulkTree.Add(objects[objects.Count - 1]);
+                individualTree.Update();
+            }
+
+            bulkTree.Update();
+
+            List<FloatRect> regions1 = new List<FloatRect>();
+            List<FloatRect> regions2 = new List<FloatRect>();
+
+            individualTree.GetAllRegions(regions1);
+            bulkTree.GetAllRegions(regions2);
+
+            HashSet<FloatRect> remaining = new HashSet<FloatRect>(regions1);
+            remaining.ExceptWith(regions2);
+
+            Assert.AreEqual(0, remaining.Count);
+        }
+
+        [TestMethod]
         public void AddRemoveTest()
         {
             QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
