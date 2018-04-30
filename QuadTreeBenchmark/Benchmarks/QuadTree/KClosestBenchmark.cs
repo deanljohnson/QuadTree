@@ -11,7 +11,7 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
     {
         private List<TestObject> m_Objects;
         private QuadTree<TestObject> m_Tree;
-        private readonly Random m_Random;
+        private readonly Random m_Random = new Random(0);
 
         public string Name => "KClosest-QT";
 
@@ -20,11 +20,6 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
 
         [Params(10,100)]
         public uint K;
-
-        public KClosestBenchmark()
-        {
-            m_Random = new Random();
-        }
 
         [GlobalSetup]
         public void Setup()

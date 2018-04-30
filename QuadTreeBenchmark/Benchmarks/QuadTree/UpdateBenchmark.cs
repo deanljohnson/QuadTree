@@ -11,22 +11,17 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
     {
         private List<TestObject> m_Objects;
         private QuadTree<TestObject> m_Tree;
-        private readonly Random m_Random;
+        private readonly Random m_Random = new Random(0);
 
         [Params(100,1000,10000)]
         public int N;
 
         public string Name => "Update-QT";
 
-        public UpdateBenchmark()
-        {
-            m_Random = new Random();
-        }
-
         [GlobalSetup]
         public void Setup()
         {
-            m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 100, 100));
+            m_Tree = new QuadTree<TestObject>(new FloatRect(0, 0, 1000, 1000));
             m_Objects = new List<TestObject>(N);
 
             for (int i = 0; i < N; i++)
@@ -61,7 +56,7 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
 
         private Vector2f RandomPosition()
         {
-            return new Vector2f((float)(m_Random.NextDouble() * 100), (float)(m_Random.NextDouble() * 100));
+            return new Vector2f((float)(m_Random.NextDouble() * 1000), (float)(m_Random.NextDouble() * 1000));
         }
     }
 }

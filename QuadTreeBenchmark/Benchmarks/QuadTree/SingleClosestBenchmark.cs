@@ -11,17 +11,12 @@ namespace QuadTreeBenchmark.Benchmarks.QuadTree
     {
         private List<TestObject> m_Objects;
         private QuadTree<TestObject> m_Tree;
-        private readonly Random m_Random;
+        private readonly Random m_Random = new Random(0);
 
         public string Name => "SingleClosest-QT";
 
         [Params(100, 1000, 10000)]
         public int NumObjects;
-
-        public SingleClosestBenchmark()
-        {
-            m_Random = new Random();
-        }
 
         [GlobalSetup]
         public void Setup()
