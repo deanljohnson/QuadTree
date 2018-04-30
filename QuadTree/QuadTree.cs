@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Priority_Queue;
@@ -106,7 +107,7 @@ namespace QuadTree
             CorrectTree(CachedList);
 
 #if DEBUG
-            if (removed.Count > 0)
+            if (CachedList.Count > 0)
                 throw new InvalidOperationException("An object has moved out of the tree completely");
 #endif
 
