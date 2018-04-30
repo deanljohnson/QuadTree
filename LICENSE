@@ -24,3 +24,5 @@ SOFTWARE.
 Libraries used by QuadTree:
 
 SFML under the zlib/png license: https://www.sfml-dev.org/license.php
+High-Speed-Priority-Queue-for-C-Sharp under the MIT license: https://github.com/BlueRaja/High-Speed-Priority-Queue-for-C-Sharp/blob/master/LICENSE.txt
+
