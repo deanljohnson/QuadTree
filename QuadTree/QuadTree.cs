@@ -482,8 +482,8 @@ namespace QuadTree
                     T obj = m_Objects[i];
                     if (obj.Position.X < m_Region.Left
                         || obj.Position.Y < m_Region.Top
-                        || obj.Position.X > (m_Region.Left + m_Region.Width)
-                        || obj.Position.Y > (m_Region.Top + m_Region.Height))
+                        || obj.Position.X >= (m_Region.Left + m_Region.Width)
+                        || obj.Position.Y >= (m_Region.Top + m_Region.Height))
                     {
                         removed.Add(obj);
                         m_Objects.RemoveAt(i);
@@ -509,8 +509,8 @@ namespace QuadTree
 
                     if (obj.Position.X < m_Region.Left
                         || obj.Position.Y < m_Region.Top
-                        || obj.Position.X > (m_Region.Left + m_Region.Width)
-                        || obj.Position.Y > (m_Region.Top + m_Region.Height))
+                        || obj.Position.X >= (m_Region.Left + m_Region.Width)
+                        || obj.Position.Y >= (m_Region.Top + m_Region.Height))
                     {
                         // The object is being removed from this level of the tree
                         m_Count--;
@@ -684,6 +684,17 @@ namespace QuadTree
         private void Prune()
         {
             if (m_Leaf) return;
+
+            // Can we condense child nodes into this one?
+            if (m_Count <= NumObjects)
+            {
+                if (m_NorthWest != null) { m_Objects.AddRange(m_NorthWest); m_NorthWest = null; }
+                if (m_NorthEast != null) { m_Objects.AddRange(m_NorthEast); m_NorthEast = null; }
+                if (m_SouthWest != null) { m_Objects.AddRange(m_SouthWest); m_SouthWest = null; }
+                if (m_SouthEast != null) { m_Objects.AddRange(m_SouthEast); m_SouthEast = null; }
+                m_Leaf = true;
+                return;
+            }
 
             bool anyChildrenAlive = false;
             if (m_NorthWest != null)
