@@ -40,7 +40,7 @@ namespace QuadTree
         /// <see cref="NumObjects"/> will not be 
         /// respected for leafs of this size.
         /// </summary>
-        public static int MinSize = 5;
+        public static float MinSize = 1;
 
         /// <summary>
         /// The maximum number of objects to add to a 
