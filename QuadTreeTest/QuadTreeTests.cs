@@ -82,11 +82,6 @@ namespace QuadTreeTest
             objs[0].Position = new Vector2f(675, 675);
             tree.Remove(objs[0]);
             tree.Update();
-            // Currently takes an extra update for the tree
-            // to prune a certain empty node. Hopefully this 
-            // can be improved eventually. This test should 
-            // tell us if something ever changes with this issue.
-            tree.Update();
             tree.GetAllRegions(regions);
             Assert.AreEqual(7, regions.Count);
             regions.Clear();

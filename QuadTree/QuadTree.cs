@@ -480,11 +480,15 @@ namespace QuadTree
                 for (int i = m_Objects.Count - 1; i >= 0; i--)
                 {
                     T obj = m_Objects[i];
-                    if (m_Region.Contains(obj.Position.X, obj.Position.Y))
-                        continue;
-                    removed.Add(obj);
-                    m_Objects.RemoveAt(i);
-                    m_Count--;
+                    if (obj.Position.X < m_Region.Left
+                        || obj.Position.Y < m_Region.Top
+                        || obj.Position.X > (m_Region.Left + m_Region.Width)
+                        || obj.Position.Y > (m_Region.Top + m_Region.Height))
+                    {
+                        removed.Add(obj);
+                        m_Objects.RemoveAt(i);
+                        m_Count--;
+                    }
                 }
             }
             // Check children for objects that have moved
@@ -503,12 +507,22 @@ namespace QuadTree
                 {
                     T obj = removed[i];
 
-                    // Is this object above this level of the tree?
-                    if (!m_Region.Contains(obj.Position.X, obj.Position.Y))
+                    if (obj.Position.X < m_Region.Left
+                        || obj.Position.Y < m_Region.Top
+                        || obj.Position.X > (m_Region.Left + m_Region.Width)
+                        || obj.Position.Y > (m_Region.Top + m_Region.Height))
+                    {
+                        // The object is being removed from this level of the tree
+                        m_Count--;
                         continue;
+                    }
 
                     removed.RemoveAt(i);
                     Insert(obj);
+                    // Insert increases our count but the object is not
+                    // not really being added to the tree it has just 
+                    // been moved up from a lower level
+                    m_Count--;
                 }
             }
         }
@@ -526,6 +540,7 @@ namespace QuadTree
             if (!m_Leaf)
             {
                 InsertIntoChildren(obj);
+                m_Count++;
                 return;
             }
 
@@ -560,7 +575,6 @@ namespace QuadTree
                     }
                     else
                         m_NorthWest.Insert(obj);
-                    m_Count++;
                 }
                 else
                 {
@@ -574,7 +588,6 @@ namespace QuadTree
                     }
                     else
                         m_SouthWest.Insert(obj);
-                    m_Count++;
                 }
             }
             else
@@ -591,7 +604,6 @@ namespace QuadTree
                     }
                     else
                         m_NorthEast.Insert(obj);
-                    m_Count++;
                 }
                 else
                 {
@@ -605,7 +617,6 @@ namespace QuadTree
                     }
                     else
                         m_SouthEast.Insert(obj);
-                    m_Count++;
                 }
             }
         }
@@ -664,7 +675,6 @@ namespace QuadTree
             {
                 InsertIntoChildren(m_Objects[i]);
             }
-            m_Count -= m_Objects.Count;
             m_Objects.Clear();
         }
 
@@ -678,35 +688,43 @@ namespace QuadTree
             bool anyChildrenAlive = false;
             if (m_NorthWest != null)
             {
-                m_NorthWest.Prune();
-                if (m_NorthWest.IsStale())
+                if (m_NorthWest.m_Count == 0)
                     m_NorthWest = null;
                 else
+                {
+                    m_NorthWest.Prune();
                     anyChildrenAlive = true;
+                }
             }
             if (m_NorthEast != null)
             {
-                m_NorthEast.Prune();
-                if (m_NorthEast.IsStale())
+                if (m_NorthEast.m_Count == 0)
                     m_NorthEast = null;
                 else
+                {
+                    m_NorthEast.Prune();
                     anyChildrenAlive = true;
+                }
             }
             if (m_SouthWest != null)
             {
-                m_SouthWest.Prune();
-                if (m_SouthWest.IsStale())
+                if (m_SouthWest.m_Count == 0)
                     m_SouthWest = null;
                 else
+                {
+                    m_SouthWest.Prune();
                     anyChildrenAlive = true;
+                }
             }
             if (m_SouthEast != null)
             {
-                m_SouthEast.Prune();
-                if (m_SouthEast.IsStale())
+                if (m_SouthEast.m_Count == 0)
                     m_SouthEast = null;
                 else
+                {
+                    m_SouthEast.Prune();
                     anyChildrenAlive = true;
+                }
             }
 
             m_Leaf = !anyChildrenAlive;
@@ -726,14 +744,6 @@ namespace QuadTree
                     ? NORTH_EAST
                     : SOUTH_EAST;
             }
-        }
-
-        /// <summary>
-        /// Returns whether or not the tree is a leaf node with no children
-        /// </summary>
-        private bool IsStale()
-        {
-            return m_Leaf && m_Objects.Count == 0;
         }
 
         public void GetAllRegions(List<FloatRect> regions)
