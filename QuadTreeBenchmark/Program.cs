@@ -28,11 +28,20 @@ namespace QuadTreeBenchmark
                 {
                     Console.WriteLine($"\t{i}) {benchmarks[i].Name}");
                 }
+                Console.WriteLine($"\t{benchmarks.Count}) All");
                 Console.Write("Select Benchmark: ");
                 string input = Console.ReadLine();
                 if (int.TryParse(input, out int benchmarkIndex))
                 {
-                    var summary = BenchmarkRunner.Run(benchmarks[benchmarkIndex].GetType());
+                    if (benchmarkIndex == benchmarks.Count)
+                    {
+                        var bs = new BenchmarkSwitcher(benchmarks.Select(b => b.GetType()).ToArray());
+                        bs.RunAllJoined();
+                    }
+                    else
+                    {
+                        var summary = BenchmarkRunner.Run(benchmarks[benchmarkIndex].GetType());
+                    }
                 }
                 else
                 {
