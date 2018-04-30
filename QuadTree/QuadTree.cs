@@ -130,6 +130,29 @@ namespace QuadTree
             Prune();
         }
 
+        /// <summary>
+        /// Clears the tree. Modifies the <see cref="QuadTree{T}"/> immediately.
+        /// </summary>
+        public void Clear()
+        {
+            m_NorthWest = null;
+            m_NorthEast = null;
+            m_SouthWest = null;
+            m_SouthEast = null;
+
+            m_Leaf = true;
+            m_Objects.Clear();
+
+            lock (m_PendingInsertion)
+            {
+                m_PendingInsertion.Clear();
+            }
+            lock (m_PendingRemoval)
+            {
+                m_PendingRemoval.Clear();
+            }
+        }
+
         #region Non-Thread-Safe Queries
 
         /// <summary>
