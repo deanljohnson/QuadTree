@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SFML.Graphics;
@@ -56,6 +57,29 @@ namespace QuadTreeTest
         {
             QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
             SpacePartitionerTests.GetKClosestObjectsTest(tree);
+
+            // Now execute tests that will hit all branches of 
+            // KNearestNeighbor search method
+
+            tree.Clear();
+
+            tree.Add(new TestObject(490, 499));
+            tree.Add(new TestObject(501, 499));
+            tree.Add(new TestObject(499.5f, 501));
+            tree.Add(new TestObject(501, 501));
+            tree.Update();
+
+            // Uses different orders of child node iteration
+            tree.GetKClosestObjects(new Vector2f(499, 499), 5);
+            tree.GetKClosestObjects(new Vector2f(501, 499), 5);
+            tree.GetKClosestObjects(new Vector2f(499, 501), 5);
+            tree.GetKClosestObjects(new Vector2f(501, 501), 5);
+
+            // Some objects not in range
+            tree.GetKClosestObjects(new Vector2f(500, 499), 3, 1.001f);
+
+            // Requires replacing elements in the PQ
+            tree.GetKClosestObjects(new Vector2f(500, 499), 3, 10f);
         }
 
         [TestMethod]
@@ -77,6 +101,41 @@ namespace QuadTreeTest
         {
             QuadTree<TestObject> tree = new QuadTree<TestObject>(m_Bounds);
             SpacePartitionerTests.GetClosestObjectTest(tree);
+
+            // Now execute tests that will hit all branches of 
+            // NearestNeighbor search method
+
+            tree.Clear();
+            tree.Add(new TestObject(488, 499));
+            tree.Add(new TestObject(508, 499));
+            tree.Add(new TestObject(496, 501));
+            tree.Add(new TestObject(501, 501));
+            tree.Update();
+            tree.GetClosestObject(new Vector2f(499, 499), 5);
+
+            tree.Clear();
+            tree.Add(new TestObject(492, 499));
+            tree.Add(new TestObject(512, 499));
+            tree.Add(new TestObject(499, 501));
+            tree.Add(new TestObject(504, 501));
+            tree.Update();
+            tree.GetClosestObject(new Vector2f(501, 499), 5);
+
+            tree.Clear();
+            tree.Add(new TestObject(496, 499));
+            tree.Add(new TestObject(501, 499));
+            tree.Add(new TestObject(488, 501));
+            tree.Add(new TestObject(508, 501));
+            tree.Update();
+            tree.GetClosestObject(new Vector2f(499, 501), 5);
+
+            tree.Clear();
+            tree.Add(new TestObject(499, 499));
+            tree.Add(new TestObject(504, 499));
+            tree.Add(new TestObject(492, 501));
+            tree.Add(new TestObject(512, 501));
+            tree.Update();
+            tree.GetClosestObject(new Vector2f(501, 501), 5);
         }
 
         [TestMethod]
